@@ -1,0 +1,54 @@
+{
+  "seq": 6,
+  "menu": [
+    {
+      "id": 1,
+      "name": "قهوة عربية",
+      "price": 0.75,
+      "cat": "ساخن",
+      "img": "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&q=80",
+      "descr": "قهوة عربية أصيلة بالهيل"
+    },
+    {
+      "id": 2,
+      "name": "شاي مع نعنع",
+      "price": 0.5,
+      "cat": "ساخن",
+      "img": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=400&q=80",
+      "descr": "شاي بلدي مع نعنع طازج"
+    },
+    {
+      "id": 3,
+      "name": "قهوة تركية",
+      "price": 1,
+      "cat": "ساخن",
+      "img": "https://images.unsplash.com/photo-1578374173705-969cbe6f2d6b?w=400&q=80",
+      "descr": "قهوة تركية على الرمل"
+    },
+    {
+      "id": 4,
+      "name": "ليموناضة بالنعنع",
+      "price": 1.25,
+      "cat": "بارد",
+      "img": "https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=400&q=80",
+      "descr": "منعشة وباردة"
+    },
+    {
+      "id": 5,
+      "name": "كنافة نابلسية",
+      "price": 2,
+      "cat": "حلويات",
+      "img": "https://images.unsplash.com/photo-1571167530149-c1105da4c2c7?w=400&q=80",
+      "descr": "كنافة بالجبنة طازجة"
+    },
+    {
+      "id": 6,
+      "name": "نرجيلة",
+      "price": 3,
+      "cat": "أخرى",
+      "img": "https://images.unsplash.com/photo-1543160577-13a994d70a26?w=400&q=80",
+      "descr": "نكهات متعددة"
+    }
+  ],
+  "orders": []
+}
