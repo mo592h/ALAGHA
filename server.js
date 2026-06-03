@@ -8,8 +8,7 @@ const ADMIN_PIN = process.env.ADMIN_PIN || "1234";
 const DB_FILE = path.join(__dirname, "data.json");
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.static(path.join(__dirname)));
 function loadDB() {
   try { return JSON.parse(fs.readFileSync(DB_FILE, "utf8")); }
   catch { return null; }
