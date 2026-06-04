@@ -3,492 +3,400 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>لوحة الإدارة</title>
-<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<title>لوحة الإدارة - الاغا</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Reem+Kufi+Fun:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0d0805; --bg2: #160d07; --card: #1c1109; --card2: #241610;
-  --gold: #d4a24e; --gold-bright: #f0c674; --gold-deep: #a67829;
-  --cream: #f5e9d6; --muted: #9a8164; --line: #3a2616;
-  --red: #c75c4a; --green: #6fa85f; --blue: #5b8db5;
+:root{
+  --stone-dark:#1a1814;--stone-mid:#2a2620;--stone-warm:#3d3830;--stone-lite:#544e44;
+  --yellow:#f5c518;--yellow-dim:#c9a014;--yellow-pale:#fde87c;
+  --red:#c0392b;--cream:#f0ead8;--muted:#9a9080;--line:#3d3830;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--cream); min-height: 100vh;
-  background-image: radial-gradient(ellipse at 10% 0%, rgba(212,162,78,.07) 0%, transparent 45%); }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Tajawal',sans-serif;background:var(--stone-dark);color:var(--cream);min-height:100vh;
+  background-image:
+    repeating-linear-gradient(-12deg,transparent 0,transparent 28px,rgba(255,255,255,.012) 28px,rgba(255,255,255,.012) 29px),
+    linear-gradient(180deg,#1a1814,#1e1c18);
+}
+.head{background:linear-gradient(180deg,#111009,#1a1814);border-bottom:2px solid var(--yellow-dim);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
+.head-left{display:flex;align-items:center;gap:12px}
+.head-logo{width:44px;height:44px;border-radius:50%;border:2px solid var(--yellow-dim);overflow:hidden}
+.head-logo img{width:100%;height:100%;object-fit:cover}
+.head-title{font-family:'Reem Kufi Fun',sans-serif;font-size:22px;color:var(--yellow);letter-spacing:1px}
+.head-actions{display:flex;gap:8px;align-items:center}
+.hbtn{background:var(--stone-mid);border:1px solid var(--stone-lite);color:var(--muted);padding:8px 13px;border-radius:6px;cursor:pointer;font-size:13px;font-family:'Tajawal';font-weight:700;transition:.2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.hbtn.on{border-color:var(--yellow-dim);color:var(--yellow)}
+.hbtn:hover{border-color:var(--yellow-dim);color:var(--cream)}
 
-.head { background: linear-gradient(180deg, var(--card2), var(--bg2)); border-bottom: 1px solid var(--gold-deep); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
-.head-title { font-family: 'Aref Ruqaa', serif; font-size: 24px; color: var(--gold-bright); display: flex; align-items: center; gap: 10px; }
-.head-actions { display: flex; gap: 8px; align-items: center; }
-.bell-btn, .ghost-btn { background: var(--card); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-family: 'Cairo'; font-weight: 600; transition: .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-.bell-btn.on { border-color: var(--gold-deep); color: var(--gold-bright); }
-.ghost-btn:hover { border-color: var(--gold-deep); color: var(--cream); }
-
-/* تسجيل الدخول */
-.login-wrap { max-width: 380px; margin: 80px auto; padding: 40px 28px; background: linear-gradient(165deg, var(--card2), var(--card)); border: 1px solid var(--line); border-radius: 24px; text-align: center; }
-.login-icon { font-size: 48px; margin-bottom: 16px; }
-.login-wrap h2 { font-family: 'Aref Ruqaa', serif; color: var(--gold-bright); font-size: 28px; margin-bottom: 24px; }
+/* دخول */
+.login-wrap{max-width:360px;margin:80px auto;padding:36px 26px;background:var(--stone-mid);border:1px solid var(--stone-lite);border-top:3px solid var(--yellow-dim);border-radius:10px;text-align:center}
+.login-logo{width:80px;height:80px;border-radius:50%;border:2px solid var(--yellow-dim);overflow:hidden;margin:0 auto 16px}
+.login-logo img{width:100%;height:100%;object-fit:cover}
+.login-wrap h2{font-family:'Reem Kufi Fun',sans-serif;color:var(--yellow);font-size:26px;margin-bottom:22px}
 
 /* تبويبات */
-.tabs { display: flex; gap: 8px; padding: 16px 24px 0; max-width: 1200px; margin: 0 auto; overflow-x: auto; scrollbar-width: none; }
-.tabs::-webkit-scrollbar { display: none; }
-.tab { background: var(--card); border: 1px solid var(--line); color: var(--muted); padding: 11px 22px; border-radius: 100px 100px 0 0; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 15px; white-space: nowrap; transition: .2s; border-bottom: none; }
-.tab.on { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a0e05; font-weight: 700; }
+.tabs{display:flex;gap:6px;padding:16px 22px 0;max-width:1200px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:var(--stone-mid);border:1px solid var(--stone-lite);border-bottom:none;color:var(--muted);padding:10px 20px;border-radius:6px 6px 0 0;cursor:pointer;font-family:'Tajawal';font-weight:700;font-size:14px;white-space:nowrap;transition:.2s}
+.tab.on{background:var(--yellow);color:#111;border-color:var(--yellow)}
 
-.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
-.page { display: none; }
-.page.on { display: block; animation: fadeIn .3s; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.container{max-width:1200px;margin:0 auto;padding:22px}
+.page{display:none}.page.on{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* الطلبات */
+.orders-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ocol-head{font-family:'Reem Kufi Fun',sans-serif;font-size:19px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:2px solid}
+.ocol-head.active{color:var(--yellow);border-color:var(--yellow-dim)}
+.ocol-head.done{color:#7c7;border-color:rgba(100,180,100,.4)}
+.clear-btn{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);color:#e77;padding:6px 13px;border-radius:6px;cursor:pointer;font-family:'Tajawal';font-weight:700;font-size:13px;transition:.2s}
+.clear-btn:hover{background:rgba(192,57,43,.3)}
+.ocard{background:var(--stone-mid);border:1px solid var(--stone-lite);border-radius:10px;padding:15px;margin-bottom:12px;transition:.3s;position:relative}
+.ocard::before{content:"";position:absolute;inset:0;border-radius:10px;background:repeating-linear-gradient(-15deg,transparent 0,transparent 10px,rgba(255,255,255,.01) 10px,rgba(255,255,255,.01) 11px);pointer-events:none}
+.ocard.flash{border-color:var(--yellow);box-shadow:0 0 20px rgba(245,197,24,.3)}
+.ocard.done{border-color:rgba(100,180,100,.25);opacity:.85}
+.ohead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.otable{font-weight:900;font-size:16px;letter-spacing:.3px}
+.otime{color:var(--muted);font-size:13px}
+.stag{padding:4px 13px;border-radius:4px;font-size:13px;font-weight:700;letter-spacing:.3px}
+.st-new{background:rgba(192,57,43,.2);color:#e88;border:1px solid rgba(192,57,43,.4)}
+.st-prep{background:rgba(245,197,24,.15);color:var(--yellow);border:1px solid rgba(245,197,24,.3)}
+.st-done{background:rgba(100,180,100,.15);color:#7c7;border:1px solid rgba(100,180,100,.3)}
+.oitem{font-size:14px;color:#d4cfc4;padding:2px 0}
+.onote{background:var(--stone-warm);border-radius:6px;padding:7px 11px;font-size:13px;color:var(--yellow-dim);margin-top:8px}
+.ototl{display:flex;justify-content:space-between;font-weight:900;color:var(--yellow);font-size:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.obtns{display:flex;gap:7px;margin-top:11px}
+.obtn{flex:1;background:var(--stone-warm);border:1px solid var(--line);color:var(--muted);padding:9px;border-radius:6px;cursor:pointer;font-family:'Tajawal';font-weight:700;font-size:13px;transition:.2s}
+.obtn:hover{border-color:var(--yellow-dim);color:var(--cream)}
+.obtn.red:hover{border-color:var(--red);color:#e88}
+
+/* المنيو */
+.col-head{font-family:'Reem Kufi Fun',sans-serif;color:var(--yellow);font-size:20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.addbtn{background:var(--yellow);color:#111;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-family:'Tajawal';font-weight:900;font-size:14px;transition:.2s}
+.addbtn:active{transform:scale(.96)}
+.mcard{background:var(--stone-mid);border:1px solid var(--stone-lite);border-radius:10px;padding:11px;display:flex;gap:11px;align-items:center;margin-bottom:9px}
+.mcard img{width:58px;height:58px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.minfo{flex:1;min-width:0}
+.mname{font-weight:900;font-size:15px;display:flex;align-items:center;gap:6px}
+.mmeta{color:var(--muted);font-size:13px}
+.mtag{font-size:11px;padding:2px 8px;border-radius:4px}
+.mt-pop{background:rgba(245,197,24,.2);color:var(--yellow)}
+.mt-out{background:rgba(192,57,43,.2);color:#e88}
+.ibtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:6px;transition:.2s}
+.ibtn:hover{color:var(--yellow)}
 
 /* إحصائيات */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-.stat-card { background: linear-gradient(165deg, var(--card2), var(--card)); border: 1px solid var(--line); border-radius: 18px; padding: 20px; position: relative; overflow: hidden; }
-.stat-card::after { content: ""; position: absolute; top: -20px; left: -20px; width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(212,162,78,.12), transparent 70%); }
-.stat-icon { font-size: 28px; margin-bottom: 10px; }
-.stat-val { font-size: 32px; font-weight: 900; color: var(--gold-bright); font-family: 'Cairo'; }
-.stat-label { color: var(--muted); font-size: 14px; margin-top: 4px; }
-.top-items { background: linear-gradient(165deg, var(--card2), var(--card)); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
-.top-items h3 { font-family: 'Aref Ruqaa', serif; color: var(--gold-bright); font-size: 22px; margin-bottom: 18px; }
-.top-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.top-rank { width: 32px; height: 32px; border-radius: 50%; background: var(--card); border: 1px solid var(--gold-deep); color: var(--gold-bright); display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
-.top-rank.gold { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a0e05; }
-.top-bar-wrap { flex: 1; }
-.top-bar-track { background: var(--bg); border-radius: 100px; height: 8px; overflow: hidden; margin-top: 6px; }
-.top-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright)); border-radius: 100px; transition: width .8s; }
-.top-count { color: var(--muted); font-size: 13px; }
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.scard{background:var(--stone-mid);border:1px solid var(--stone-lite);border-top:3px solid var(--yellow-dim);border-radius:8px;padding:18px}
+.sicon{font-size:26px;margin-bottom:8px}
+.sval{font-size:30px;font-weight:900;color:var(--yellow)}
+.slabel{color:var(--muted);font-size:13px;margin-top:3px}
+.topbox{background:var(--stone-mid);border:1px solid var(--stone-lite);border-radius:8px;padding:20px}
+.topbox h3{font-family:'Reem Kufi Fun',sans-serif;color:var(--yellow);font-size:20px;margin-bottom:16px}
+.trow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.trank{width:30px;height:30px;border-radius:4px;background:var(--stone-warm);border:1px solid var(--yellow-dim);color:var(--yellow);display:grid;place-items:center;font-weight:900;flex-shrink:0}
+.trank.gold{background:var(--yellow);color:#111;border-color:var(--yellow)}
+.tbar-wrap{flex:1}
+.tbar-track{background:var(--stone-dark);border-radius:100px;height:7px;overflow:hidden;margin-top:5px}
+.tbar-fill{height:100%;background:linear-gradient(90deg,var(--yellow-dim),var(--yellow));border-radius:100px;transition:width .8s}
 
-/* أعمدة الطلبات والمنيو */
-.cols { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
-.col-head { font-family: 'Aref Ruqaa', serif; color: var(--gold-bright); font-size: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-.add-btn { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a0e05; border: none; padding: 9px 18px; border-radius: 100px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 14px; transition: .2s; }
-.add-btn:active { transform: scale(.96); }
-
-.order-card { background: linear-gradient(165deg, var(--card2), var(--card)); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; transition: .3s; }
-.order-card.flash { border-color: var(--gold-bright); box-shadow: 0 0 24px rgba(240,198,116,.35); }
-.order-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.order-table { font-weight: 700; font-size: 16px; }
-.order-time { color: var(--muted); font-size: 13px; }
-.status-tag { padding: 5px 14px; border-radius: 100px; font-size: 13px; font-weight: 700; }
-.st-new { background: rgba(199,92,74,.2); color: #e88; border: 1px solid rgba(199,92,74,.4); }
-.st-prep { background: rgba(212,162,78,.2); color: var(--gold-bright); border: 1px solid rgba(212,162,78,.4); }
-.st-done { background: rgba(111,168,95,.2); color: #8c8; border: 1px solid rgba(111,168,95,.4); }
-.order-items { margin: 8px 0; }
-.order-item-line { font-size: 14px; color: #d4b896; padding: 2px 0; }
-.order-note { background: var(--bg); border-radius: 10px; padding: 8px 12px; font-size: 13px; color: var(--gold); margin-top: 8px; }
-.order-total { display: flex; justify-content: space-between; font-weight: 900; color: var(--gold-bright); font-size: 17px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
-.order-btns { display: flex; gap: 8px; margin-top: 12px; }
-.obtn { flex: 1; background: var(--bg); border: 1px solid var(--line); color: var(--muted); padding: 9px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 13px; transition: .2s; }
-.obtn:hover { border-color: var(--gold-deep); color: var(--cream); }
-.obtn.del:hover { border-color: var(--red); color: var(--red); }
-
-.menu-admin-card { background: linear-gradient(165deg, var(--card2), var(--card)); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-.menu-admin-card img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
-.menu-admin-info { flex: 1; min-width: 0; }
-.menu-admin-name { font-weight: 700; display: flex; align-items: center; gap: 6px; }
-.menu-admin-meta { color: var(--muted); font-size: 13px; }
-.mini-tag { font-size: 11px; padding: 2px 8px; border-radius: 100px; }
-.mini-popular { background: rgba(212,162,78,.2); color: var(--gold-bright); }
-.mini-out { background: rgba(199,92,74,.2); color: #e88; }
-.icon-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 6px; transition: .2s; }
-.icon-btn:hover { color: var(--gold-bright); }
-
-.empty { text-align: center; color: var(--muted); padding: 50px 20px; }
-.empty-icon { font-size: 40px; opacity: .4; margin-bottom: 10px; }
+/* إعدادات */
+.cat-chip{display:inline-flex;align-items:center;gap:7px;background:var(--stone-warm);border:1px solid var(--stone-lite);border-radius:6px;padding:7px 13px;margin:0 6px 8px 0;font-size:14px;font-weight:700}
+.cat-chip button{background:none;border:none;color:#e88;cursor:pointer;font-size:15px}
 
 /* مودال */
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); z-index: 50; display: none; align-items: center; justify-content: center; padding: 20px; }
-.overlay.show { display: flex; }
-.modal { background: linear-gradient(165deg, var(--card2), var(--card)); border: 1px solid var(--gold-deep); border-radius: 22px; width: 100%; max-width: 460px; padding: 26px; max-height: 92vh; overflow-y: auto; animation: modalIn .3s; }
-@keyframes modalIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
-.modal h2 { font-family: 'Aref Ruqaa', serif; color: var(--gold-bright); font-size: 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-.close-x { background: var(--card); border: 1px solid var(--line); color: var(--muted); cursor: pointer; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; }
-.field-label { color: var(--muted); font-size: 14px; margin-bottom: 8px; display: block; }
-.inp { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--cream); padding: 13px; border-radius: 13px; font-family: 'Cairo'; font-size: 15px; margin-bottom: 16px; transition: .2s; }
-.inp:focus { outline: none; border-color: var(--gold-deep); }
-.img-preview { width: 100%; height: 140px; object-fit: cover; border-radius: 14px; margin-bottom: 16px; display: none; border: 1px solid var(--line); }
-.toggle-row { display: flex; gap: 12px; margin-bottom: 16px; }
-.toggle-opt { flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 13px; padding: 13px; cursor: pointer; text-align: center; font-weight: 600; font-size: 14px; color: var(--muted); transition: .2s; user-select: none; }
-.toggle-opt.on { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212,162,78,.1); }
-.big-btn { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a0e05; border: none; width: 100%; padding: 16px; border-radius: 15px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 16px; transition: .2s; }
-.big-btn:active { transform: scale(.98); }
-.or-divider { text-align: center; color: var(--muted); font-size: 13px; margin: 8px 0 12px; }
-
-/* إدارة الأقسام */
-.cat-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 100px; padding: 8px 14px; margin: 0 6px 10px 0; font-size: 14px; }
-.cat-chip button { background: none; border: none; color: var(--red); cursor: pointer; font-size: 16px; }
-
-/* قائمتا الطلبات */
-.orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.orders-col { }
-.orders-col-head { font-family: 'Aref Ruqaa', serif; font-size: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid; }
-.orders-col-head.active { color: var(--gold-bright); border-color: var(--gold-deep); }
-.orders-col-head.done { color: #8c8; border-color: rgba(111,168,95,.4); }
-.clear-all-btn { background: rgba(199,92,74,.15); border: 1px solid rgba(199,92,74,.4); color: #e88; padding: 7px 14px; border-radius: 100px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 13px; transition: .2s; }
-.clear-all-btn:hover { background: rgba(199,92,74,.3); }
-.order-card.done-card { border-color: rgba(111,168,95,.25); opacity: .85; }
-@media (max-width: 700px) { .orders-grid { grid-template-columns: 1fr; } }
-
-@media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:50;display:none;align-items:center;justify-content:center;padding:18px}
+.overlay.show{display:flex}
+.modal{background:var(--stone-mid);border:1px solid var(--stone-lite);border-top:3px solid var(--yellow-dim);border-radius:10px;width:100%;max-width:450px;padding:24px;max-height:92vh;overflow-y:auto;animation:mIn .3s}
+@keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal h2{font-family:'Reem Kufi Fun',sans-serif;color:var(--yellow);font-size:22px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.cx{background:var(--stone-warm);border:1px solid var(--line);color:var(--muted);cursor:pointer;width:34px;height:34px;border-radius:6px;font-size:18px;display:grid;place-items:center}
+.fl{color:var(--muted);font-size:14px;margin-bottom:7px;display:block;font-weight:700}
+.inp{width:100%;background:var(--stone-warm);border:1px solid var(--line);color:var(--cream);padding:12px;border-radius:7px;font-family:'Tajawal';font-size:15px;margin-bottom:14px;transition:.2s}
+.inp:focus{outline:none;border-color:var(--yellow-dim)}
+.ipreview{width:100%;height:130px;object-fit:cover;border-radius:8px;margin-bottom:14px;display:none;border:1px solid var(--stone-lite)}
+.togrow{display:flex;gap:10px;margin-bottom:14px}
+.togopt{flex:1;background:var(--stone-warm);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;text-align:center;font-weight:700;font-size:14px;color:var(--muted);transition:.2s;user-select:none}
+.togopt.on{border-color:var(--yellow);color:var(--yellow);background:rgba(245,197,24,.1)}
+.bigbtn{background:var(--yellow);color:#111;border:none;width:100%;padding:15px;border-radius:8px;cursor:pointer;font-family:'Tajawal';font-weight:900;font-size:16px;transition:.2s;letter-spacing:.5px}
+.bigbtn:active{transform:scale(.98)}
+.ordiv{text-align:center;color:var(--muted);font-size:13px;margin:6px 0 12px}
+.empty{text-align:center;color:var(--muted);padding:45px 20px}
+.empty-icon{font-size:38px;opacity:.35;margin-bottom:10px}
+.hide{display:none}
+@media(max-width:750px){.orders-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="head">
-  <div class="head-title">☕ لوحة الإدارة</div>
+  <div class="head-left">
+    <div class="head-logo"><img src="/uploads/logo.jpg" onerror="this.style.display='none'"></div>
+    <div class="head-title">الاغا — الإدارة</div>
+  </div>
   <div class="head-actions" id="headActions" style="display:none">
-    <button class="bell-btn on" id="bellBtn" onclick="toggleBell()">🔔</button>
-    <a class="ghost-btn" href="/" target="_blank">المنيو ↗</a>
+    <button class="hbtn on" id="bellBtn" onclick="toggleBell()">🔔</button>
+    <a class="hbtn" href="/" target="_blank">المنيو ↗</a>
   </div>
 </div>
 
-<!-- تسجيل الدخول -->
 <div class="login-wrap" id="loginWrap">
-  <div class="login-icon">🔒</div>
+  <div class="login-logo"><img src="/uploads/logo.jpg" onerror="this.style.display='none'"></div>
   <h2>دخول الإدارة</h2>
   <input class="inp" id="pin" type="password" placeholder="الرمز السري" onkeydown="if(event.key==='Enter')login()">
-  <button class="big-btn" onclick="login()">دخول</button>
+  <button class="bigbtn" onclick="login()">دخول</button>
 </div>
 
-<!-- اللوحة -->
-<div id="dashboard" style="display:none">
+<div id="dashboard" class="hide">
   <div class="tabs">
     <button class="tab on" onclick="showTab('orders',this)">📋 الطلبات</button>
     <button class="tab" onclick="showTab('menu',this)">🍽️ المنيو</button>
     <button class="tab" onclick="showTab('stats',this)">📊 الإحصائيات</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ الإعدادات</button>
   </div>
-
   <div class="container">
-    <!-- صفحة الطلبات -->
+
     <div class="page on" id="page-orders">
       <div class="orders-grid">
-        <div class="orders-col">
-          <div class="orders-col-head active">
+        <div>
+          <div class="ocol-head active">
             <span>🔥 نشطة (<span id="ordCount">0</span>)</span>
           </div>
           <div id="orders-active"></div>
         </div>
-        <div class="orders-col">
-          <div class="orders-col-head done">
+        <div>
+          <div class="ocol-head done">
             <span>✅ جاهزة (<span id="ordDoneCount">0</span>)</span>
-            <button class="clear-all-btn" onclick="clearDone()">🗑️ مسح الكل</button>
+            <button class="clear-btn" onclick="clearDone()">🗑️ مسح الكل</button>
           </div>
           <div id="orders-done"></div>
         </div>
       </div>
     </div>
 
-    <!-- صفحة المنيو -->
     <div class="page" id="page-menu">
-      <div class="col-head"><span>إدارة المنيو</span><button class="add-btn" onclick="openEdit()">+ صنف جديد</button></div>
+      <div class="col-head"><span>إدارة المنيو</span><button class="addbtn" onclick="openEdit()">+ صنف جديد</button></div>
       <div id="menuList"></div>
     </div>
 
-    <!-- صفحة الإحصائيات -->
     <div class="page" id="page-stats">
-      <div class="stats-grid" id="statsGrid"></div>
-      <div class="top-items">
-        <h3>🏆 الأكثر مبيعاً</h3>
-        <div id="topItems"></div>
-      </div>
+      <div class="sgrid" id="statsGrid"></div>
+      <div class="topbox"><h3>🏆 الأكثر مبيعاً</h3><div id="topItems"></div></div>
     </div>
 
-    <!-- صفحة الإعدادات -->
     <div class="page" id="page-settings">
       <div class="col-head"><span>إعدادات المقهى</span></div>
-      <div style="max-width:500px">
-        <label class="field-label">اسم المقهى</label>
+      <div style="max-width:480px">
+        <label class="fl">اسم المقهى</label>
         <input class="inp" id="cafeName" placeholder="اسم المقهى">
-        <button class="big-btn" style="margin-bottom:28px" onclick="saveCafeName()">حفظ الاسم</button>
-
-        <label class="field-label">الأقسام</label>
+        <button class="bigbtn" style="margin-bottom:26px" onclick="saveCafeName()">حفظ الاسم</button>
+        <label class="fl">الأقسام</label>
         <div id="catsList" style="margin-bottom:12px"></div>
         <div style="display:flex;gap:8px">
           <input class="inp" id="newCat" placeholder="قسم جديد" style="margin-bottom:0" onkeydown="if(event.key==='Enter')addCat()">
-          <button class="add-btn" onclick="addCat()">إضافة</button>
+          <button class="addbtn" onclick="addCat()">إضافة</button>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
-<!-- مودال إضافة/تعديل -->
+<!-- مودال -->
 <div class="overlay" id="overlay" onclick="if(event.target.id==='overlay')closeEdit()">
   <div class="modal">
-    <h2 id="modalTitle">صنف جديد <button class="close-x" onclick="closeEdit()">✕</button></h2>
-    <img id="imgPreview" class="img-preview">
-    <label class="field-label">اسم الصنف *</label>
+    <h2 id="modalTitle">صنف جديد <button class="cx" onclick="closeEdit()">✕</button></h2>
+    <img id="ipreview" class="ipreview">
+    <label class="fl">اسم الصنف *</label>
     <input class="inp" id="f_name" placeholder="مثال: قهوة عربية">
-    <label class="field-label">الوصف</label>
+    <label class="fl">الوصف</label>
     <input class="inp" id="f_desc" placeholder="وصف قصير">
-    <label class="field-label">السعر (د.أ) *</label>
+    <label class="fl">السعر (د.أ) *</label>
     <input class="inp" id="f_price" type="number" step="0.25" min="0" placeholder="0.00">
-    <label class="field-label">القسم</label>
+    <label class="fl">القسم</label>
     <select class="inp" id="f_cat"></select>
-    <label class="field-label">الصورة</label>
+    <label class="fl">الصورة</label>
     <input class="inp" id="f_img" placeholder="رابط الصورة" oninput="previewUrl(this.value)">
-    <div class="or-divider">— أو ارفع من جهازك —</div>
+    <div class="ordiv">— أو ارفع من جهازك —</div>
     <input class="inp" id="f_file" type="file" accept="image/*" onchange="uploadImg(this)">
-    <div class="toggle-row">
-      <div class="toggle-opt on" id="tgl-avail" onclick="toggleOpt('avail')">✓ متوفر</div>
-      <div class="toggle-opt" id="tgl-popular" onclick="toggleOpt('popular')">★ الأكثر طلباً</div>
+    <div class="togrow">
+      <div class="togopt on" id="tgl-avail" onclick="toggleOpt('avail')">✓ متوفر</div>
+      <div class="togopt" id="tgl-popular" onclick="toggleOpt('popular')">⭐ الأكثر طلباً</div>
     </div>
-    <button class="big-btn" onclick="saveItem()">💾 حفظ</button>
+    <button class="bigbtn" onclick="saveItem()">💾 حفظ</button>
   </div>
 </div>
 
 <script>
-let PIN = "", menu = [], CATS = [], editId = null;
-let lastNewIds = new Set(), bellOn = true, firstLoad = true;
-let optAvail = true, optPopular = false;
-const fallback = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&q=80";
-const H = () => ({ "Content-Type":"application/json", "x-pin": PIN });
-const STATUS = { "جديد":["st-new","🆕"], "قيد التحضير":["st-prep","⏳"], "جاهز":["st-done","✅"] };
+let PIN="",menu=[],CATS=[],editId=null;
+let lastNewIds=new Set(),bellOn=true,firstLoad=true;
+let optAvail=true,optPopular=false;
+const fallback="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&q=80";
+const H=()=>({"Content-Type":"application/json","x-pin":PIN});
+const STATUS={"جديد":["st-new","🆕"],"قيد التحضير":["st-prep","⏳"],"جاهز":["st-done","✅"]};
 
-// ===== الجرس =====
-function playBell() {
-  if (!bellOn) return;
-  try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const t = ctx.currentTime;
-    [659, 784, 988, 784].forEach((f,i)=>{
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.type = "sine"; o.frequency.value = f;
-      const st = t + i*0.13;
-      g.gain.setValueAtTime(0, st);
-      g.gain.linearRampToValueAtTime(0.35, st+0.04);
-      g.gain.exponentialRampToValueAtTime(0.001, st+1.2);
-      o.start(st); o.stop(st+1.2);
+function playBell(){
+  if(!bellOn)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const t=ctx.currentTime;
+    [659,784,988,784].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type="sine";o.frequency.value=f;
+      const st=t+i*.13;
+      g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.35,st+.04);g.gain.exponentialRampToValueAtTime(.001,st+1.2);
+      o.start(st);o.stop(st+1.2);
     });
-  } catch(e){}
+  }catch(e){}
 }
-function toggleBell() {
-  bellOn = !bellOn;
-  const b = document.getElementById("bellBtn");
-  b.textContent = bellOn ? "🔔" : "🔕";
-  b.classList.toggle("on", bellOn);
+function toggleBell(){bellOn=!bellOn;const b=document.getElementById("bellBtn");b.textContent=bellOn?"🔔":"🔕";b.classList.toggle("on",bellOn)}
+
+async function login(){
+  PIN=document.getElementById("pin").value;
+  const r=await(await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:PIN})})).json();
+  if(r.ok){
+    document.getElementById("loginWrap").style.display="none";
+    document.getElementById("dashboard").classList.remove("hide");
+    document.getElementById("headActions").style.display="flex";
+    loadConfig();loadMenu();loadOrders();setInterval(loadOrders,5000);
+  }else alert("رمز خاطئ");
 }
 
-// ===== الدخول =====
-async function login() {
-  PIN = document.getElementById("pin").value;
-  const r = await (await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:PIN})})).json();
-  if (r.ok) {
-    document.getElementById("loginWrap").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("headActions").style.display = "flex";
-    loadConfig(); loadMenu(); loadOrders();
-    setInterval(loadOrders, 5000);
-  } else alert("رمز خاطئ");
-}
-
-// ===== التبويبات =====
-function showTab(name, btn) {
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
-  btn.classList.add("on");
+function showTab(name,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));btn.classList.add("on");
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
   document.getElementById("page-"+name).classList.add("on");
-  if (name === "stats") loadStats();
+  if(name==="stats")loadStats();
 }
 
-// ===== الإعدادات =====
-async function loadConfig() {
-  const cfg = await (await fetch("/api/config")).json();
-  CATS = cfg.cats;
-  document.getElementById("cafeName").value = cfg.cafeName;
-  renderCatsList();
-  renderCatSelect();
+async function loadConfig(){
+  const cfg=await(await fetch("/api/config")).json();
+  CATS=cfg.cats;
+  document.getElementById("cafeName").value=cfg.cafeName;
+  renderCatsList();renderCatSelect();
 }
-function renderCatSelect() {
-  document.getElementById("f_cat").innerHTML = CATS.map(c=>`<option>${c}</option>`).join("");
-}
-function renderCatsList() {
-  document.getElementById("catsList").innerHTML = CATS.map(c=>
-    `<span class="cat-chip">${c} <button onclick="removeCat('${c}')">✕</button></span>`).join("");
-}
-async function saveCafeName() {
-  const name = document.getElementById("cafeName").value.trim();
-  if (!name) return;
-  await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cafeName:name})});
-  alert("تم حفظ الاسم ✓");
-}
-async function addCat() {
-  const c = document.getElementById("newCat").value.trim();
-  if (!c || CATS.includes(c)) return;
-  CATS.push(c);
-  await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});
-  document.getElementById("newCat").value = "";
-  renderCatsList(); renderCatSelect();
-}
-async function removeCat(c) {
-  if (!confirm("حذف القسم "+c+"؟")) return;
-  CATS = CATS.filter(x=>x!==c);
-  await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});
-  renderCatsList(); renderCatSelect();
-}
+function renderCatSelect(){document.getElementById("f_cat").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("")}
+function renderCatsList(){document.getElementById("catsList").innerHTML=CATS.map(c=>`<span class="cat-chip">${c}<button onclick="removeCat('${c}')">✕</button></span>`).join("")}
+async function saveCafeName(){const n=document.getElementById("cafeName").value.trim();if(!n)return;await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cafeName:n})});alert("تم الحفظ ✓")}
+async function addCat(){const c=document.getElementById("newCat").value.trim();if(!c||CATS.includes(c))return;CATS.push(c);await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});document.getElementById("newCat").value="";renderCatsList();renderCatSelect()}
+async function removeCat(c){if(!confirm("حذف القسم "+c+"؟"))return;CATS=CATS.filter(x=>x!==c);await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});renderCatsList();renderCatSelect()}
 
-// ===== المنيو =====
-async function loadMenu() {
-  menu = await (await fetch("/api/menu")).json();
-  const el = document.getElementById("menuList");
-  el.innerHTML = menu.length ? menu.map(m=>`
-    <div class="menu-admin-card">
+async function loadMenu(){
+  menu=await(await fetch("/api/menu")).json();
+  document.getElementById("menuList").innerHTML=menu.length?menu.map(m=>`
+    <div class="mcard">
       <img src="${m.img||fallback}" onerror="this.src='${fallback}'">
-      <div class="menu-admin-info">
-        <div class="menu-admin-name">
-          ${m.name}
-          ${m.popular?'<span class="mini-tag mini-popular">★</span>':''}
-          ${!m.available?'<span class="mini-tag mini-out">غير متوفر</span>':''}
+      <div class="minfo">
+        <div class="mname">${m.name}
+          ${m.popular?'<span class="mtag mt-pop">⭐</span>':''}
+          ${!m.available?'<span class="mtag mt-out">غير متوفر</span>':''}
         </div>
-        <div class="menu-admin-meta">${m.cat} · ${m.price.toFixed(2)} د.أ</div>
+        <div class="mmeta">${m.cat} · ${m.price.toFixed(2)} د.أ</div>
       </div>
-      <button class="icon-btn" onclick="openEdit(${m.id})">✏️</button>
-      <button class="icon-btn" onclick="delItem(${m.id})">🗑️</button>
-    </div>`).join("") : '<div class="empty"><div class="empty-icon">🍽️</div>لا توجد أصناف بعد</div>';
+      <button class="ibtn" onclick="openEdit(${m.id})">✏️</button>
+      <button class="ibtn" onclick="delItem(${m.id})">🗑️</button>
+    </div>`).join(""):'<div class="empty"><div class="empty-icon">🍽️</div>لا توجد أصناف بعد</div>';
 }
 
-// ===== الطلبات =====
-function renderOrderCard(o, isDone) {
-  const [cls,icon] = STATUS[o.status]||["st-new","🆕"];
-  const btns = isDone
-    ? `<div class="order-btns"><button class="obtn del" onclick="delOrder(${o.id})">🗑️ حذف</button></div>`
-    : `<div class="order-btns">
+function renderOCard(o,isDone){
+  const[cls,icon]=STATUS[o.status]||["st-new","🆕"];
+  const btns=isDone
+    ?`<div class="obtns"><button class="obtn red" onclick="delOrder(${o.id})">🗑️ حذف</button></div>`
+    :`<div class="obtns">
         <button class="obtn" onclick="setStatus(${o.id},'قيد التحضير')">⏳ تحضير</button>
         <button class="obtn" onclick="setStatus(${o.id},'جاهز')">✅ جاهز</button>
-        <button class="obtn del" onclick="delOrder(${o.id})">🗑️</button>
-       </div>`;
-  return `
-  <div class="order-card ${o.status==='جديد'?'flash':''} ${isDone?'done-card':''}">
-    <div class="order-head">
-      <div><span class="order-table">🪑 طاولة ${o.tableNo}</span> <span class="order-time">🕐 ${o.time}</span></div>
-      <span class="status-tag ${cls}">${icon} ${o.status}</span>
+        <button class="obtn red" onclick="delOrder(${o.id})">🗑️</button>
+      </div>`;
+  return`<div class="ocard ${o.status==='جديد'?'flash':''} ${isDone?'done':''}">
+    <div class="ohead">
+      <div><span class="otable">🪑 طاولة ${o.tableNo}</span> <span class="otime">🕐 ${o.time}</span></div>
+      <span class="stag ${cls}">${icon} ${o.status}</span>
     </div>
-    <div class="order-items">
-      ${o.items.map(it=>`<div class="order-item-line">${it.qty}× ${it.name} <span style="color:var(--muted)">— ${(it.price*it.qty).toFixed(2)} د.أ</span></div>`).join("")}
-    </div>
-    ${o.note?`<div class="order-note">📝 ${o.note}</div>`:''}
-    <div class="order-total"><span>المجموع</span><span>${o.total.toFixed(2)} د.أ</span></div>
+    ${o.items.map(it=>`<div class="oitem">${it.qty}× ${it.name} <span style="color:var(--muted)">— ${(it.price*it.qty).toFixed(2)} د.أ</span></div>`).join("")}
+    ${o.note?`<div class="onote">📝 ${o.note}</div>`:''}
+    <div class="ototl"><span>المجموع</span><span>${o.total.toFixed(2)} د.أ</span></div>
     ${btns}
   </div>`;
 }
 
-async function loadOrders() {
-  const orders = await (await fetch("/api/orders",{headers:H()})).json();
-  const active = orders.filter(o => o.status !== "جاهز");
-  const done   = orders.filter(o => o.status === "جاهز");
-
-  // جرس للطلبات الجديدة
-  const newIds = new Set(active.filter(o=>o.status==="جديد").map(o=>o.id));
-  let hasNew = false;
-  newIds.forEach(id=>{ if(!lastNewIds.has(id)) hasNew = true; });
-  if (hasNew && !firstLoad) playBell();
-  lastNewIds = newIds; firstLoad = false;
-
-  document.getElementById("ordCount").textContent = active.length;
-  document.getElementById("ordDoneCount").textContent = done.length;
-
-  const aEl = document.getElementById("orders-active");
-  aEl.innerHTML = active.length
-    ? active.map(o => renderOrderCard(o, false)).join("")
-    : '<div class="empty"><div class="empty-icon">🎉</div>لا توجد طلبات نشطة</div>';
-
-  const dEl = document.getElementById("orders-done");
-  dEl.innerHTML = done.length
-    ? done.map(o => renderOrderCard(o, true)).join("")
-    : '<div class="empty"><div class="empty-icon">📋</div>لا توجد طلبات جاهزة بعد</div>';
+async function loadOrders(){
+  const orders=await(await fetch("/api/orders",{headers:H()})).json();
+  const active=orders.filter(o=>o.status!=="جاهز");
+  const done=orders.filter(o=>o.status==="جاهز");
+  const newIds=new Set(active.filter(o=>o.status==="جديد").map(o=>o.id));
+  let hasNew=false;newIds.forEach(id=>{if(!lastNewIds.has(id))hasNew=true});
+  if(hasNew&&!firstLoad)playBell();
+  lastNewIds=newIds;firstLoad=false;
+  document.getElementById("ordCount").textContent=active.length;
+  document.getElementById("ordDoneCount").textContent=done.length;
+  document.getElementById("orders-active").innerHTML=active.length?active.map(o=>renderOCard(o,false)).join(""):'<div class="empty"><div class="empty-icon">🎉</div>لا توجد طلبات نشطة</div>';
+  document.getElementById("orders-done").innerHTML=done.length?done.map(o=>renderOCard(o,true)).join(""):'<div class="empty"><div class="empty-icon">📋</div>لا توجد طلبات جاهزة</div>';
 }
-
-async function setStatus(id, status) {
-  await fetch("/api/orders/"+id,{method:"PUT",headers:H(),body:JSON.stringify({status})});
-  loadOrders();
-}
-async function delOrder(id) {
-  await fetch("/api/orders/"+id,{method:"DELETE",headers:H()});
-  loadOrders();
-}
-async function clearDone() {
-  if (!confirm("مسح جميع الطلبات الجاهزة؟")) return;
-  const orders = await (await fetch("/api/orders",{headers:H()})).json();
-  const done = orders.filter(o => o.status === "جاهز");
-  await Promise.all(done.map(o => fetch("/api/orders/"+o.id,{method:"DELETE",headers:H()})));
+async function setStatus(id,status){await fetch("/api/orders/"+id,{method:"PUT",headers:H(),body:JSON.stringify({status})});loadOrders()}
+async function delOrder(id){await fetch("/api/orders/"+id,{method:"DELETE",headers:H()});loadOrders()}
+async function clearDone(){
+  if(!confirm("مسح جميع الطلبات الجاهزة؟"))return;
+  const orders=await(await fetch("/api/orders",{headers:H()})).json();
+  await Promise.all(orders.filter(o=>o.status==="جاهز").map(o=>fetch("/api/orders/"+o.id,{method:"DELETE",headers:H()})));
   loadOrders();
 }
 
-// ===== الإحصائيات =====
-async function loadStats() {
-  const s = await (await fetch("/api/stats",{headers:H()})).json();
-  document.getElementById("statsGrid").innerHTML = `
-    <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val">${s.totalOrders}</div><div class="stat-label">إجمالي الطلبات</div></div>
-    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val">${s.todayOrders}</div><div class="stat-label">طلبات اليوم</div></div>
-    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">${s.revenue.toFixed(2)}</div><div class="stat-label">إجمالي الإيرادات (د.أ)</div></div>
-    <div class="stat-card"><div class="stat-icon">💵</div><div class="stat-val">${s.todayRevenue.toFixed(2)}</div><div class="stat-label">إيرادات اليوم (د.أ)</div></div>
-    <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-val">${s.pending}</div><div class="stat-label">طلبات جديدة</div></div>
-  `;
-  const max = s.topItems.length ? s.topItems[0][1] : 1;
-  document.getElementById("topItems").innerHTML = s.topItems.length ? s.topItems.map(([name,cnt],i)=>`
-    <div class="top-row">
-      <div class="top-rank ${i===0?'gold':''}">${i+1}</div>
-      <div class="top-bar-wrap">
-        <div style="display:flex;justify-content:space-between"><b>${name}</b><span class="top-count">${cnt} طلب</span></div>
-        <div class="top-bar-track"><div class="top-bar-fill" style="width:${(cnt/max*100)}%"></div></div>
+async function loadStats(){
+  const s=await(await fetch("/api/stats",{headers:H()})).json();
+  document.getElementById("statsGrid").innerHTML=`
+    <div class="scard"><div class="sicon">📦</div><div class="sval">${s.totalOrders}</div><div class="slabel">إجمالي الطلبات</div></div>
+    <div class="scard"><div class="sicon">📅</div><div class="sval">${s.todayOrders}</div><div class="slabel">طلبات اليوم</div></div>
+    <div class="scard"><div class="sicon">💰</div><div class="sval">${s.revenue.toFixed(2)}</div><div class="slabel">إجمالي الإيرادات (د.أ)</div></div>
+    <div class="scard"><div class="sicon">💵</div><div class="sval">${s.todayRevenue.toFixed(2)}</div><div class="slabel">إيرادات اليوم (د.أ)</div></div>
+    <div class="scard"><div class="sicon">⏰</div><div class="sval">${s.pending}</div><div class="slabel">طلبات جديدة</div></div>`;
+  const max=s.topItems.length?s.topItems[0][1]:1;
+  document.getElementById("topItems").innerHTML=s.topItems.length?s.topItems.map(([name,cnt],i)=>`
+    <div class="trow">
+      <div class="trank ${i===0?'gold':''}">${i+1}</div>
+      <div class="tbar-wrap">
+        <div style="display:flex;justify-content:space-between"><b>${name}</b><span style="color:var(--muted);font-size:13px">${cnt} طلب</span></div>
+        <div class="tbar-track"><div class="tbar-fill" style="width:${cnt/max*100}%"></div></div>
       </div>
-    </div>`).join("") : '<div class="empty">لا توجد بيانات بعد</div>';
+    </div>`).join(""):'<div class="empty">لا توجد بيانات</div>';
 }
 
-// ===== مودال الصنف =====
-function previewUrl(url) {
-  const img = document.getElementById("imgPreview");
-  if (url) { img.src = url; img.style.display = "block"; } else img.style.display = "none";
-}
-function toggleOpt(which) {
-  if (which==="avail") { optAvail = !optAvail; document.getElementById("tgl-avail").classList.toggle("on",optAvail); }
-  else { optPopular = !optPopular; document.getElementById("tgl-popular").classList.toggle("on",optPopular); }
-}
-function openEdit(id) {
-  editId = id || null;
-  renderCatSelect();
-  const isEdit = !!id;
-  document.getElementById("modalTitle").firstChild.textContent = isEdit ? "تعديل صنف " : "صنف جديد ";
-  const m = isEdit ? menu.find(x=>x.id===id) : {name:"",descr:"",price:"",img:"",cat:CATS[0],available:true,popular:false};
-  document.getElementById("f_name").value = m.name;
-  document.getElementById("f_desc").value = m.descr||"";
-  document.getElementById("f_price").value = m.price||"";
-  document.getElementById("f_img").value = m.img||"";
-  document.getElementById("f_cat").value = m.cat;
-  document.getElementById("f_file").value = "";
-  optAvail = m.available !== false; optPopular = !!m.popular;
+function previewUrl(url){const img=document.getElementById("ipreview");if(url){img.src=url;img.style.display="block"}else img.style.display="none"}
+function toggleOpt(w){if(w==="avail"){optAvail=!optAvail;document.getElementById("tgl-avail").classList.toggle("on",optAvail)}else{optPopular=!optPopular;document.getElementById("tgl-popular").classList.toggle("on",optPopular)}}
+function openEdit(id){
+  editId=id||null;renderCatSelect();
+  document.getElementById("modalTitle").firstChild.textContent=id?"تعديل صنف ":"صنف جديد ";
+  const m=id?menu.find(x=>x.id===id):{name:"",descr:"",price:"",img:"",cat:CATS[0],available:true,popular:false};
+  document.getElementById("f_name").value=m.name;
+  document.getElementById("f_desc").value=m.descr||"";
+  document.getElementById("f_price").value=m.price||"";
+  document.getElementById("f_img").value=m.img||"";
+  document.getElementById("f_cat").value=m.cat;
+  document.getElementById("f_file").value="";
+  optAvail=m.available!==false;optPopular=!!m.popular;
   document.getElementById("tgl-avail").classList.toggle("on",optAvail);
   document.getElementById("tgl-popular").classList.toggle("on",optPopular);
   previewUrl(m.img||"");
   document.getElementById("overlay").classList.add("show");
 }
-function closeEdit() { document.getElementById("overlay").classList.remove("show"); document.getElementById("imgPreview").style.display="none"; }
-async function uploadImg(input) {
-  if (!input.files[0]) return;
-  const fd = new FormData(); fd.append("img", input.files[0]);
-  const r = await (await fetch("/api/upload",{method:"POST",headers:{"x-pin":PIN},body:fd})).json();
-  document.getElementById("f_img").value = r.url;
-  previewUrl(r.url);
+function closeEdit(){document.getElementById("overlay").classList.remove("show");document.getElementById("ipreview").style.display="none"}
+async function uploadImg(input){
+  if(!input.files[0])return;
+  const fd=new FormData();fd.append("img",input.files[0]);
+  const r=await(await fetch("/api/upload",{method:"POST",headers:{"x-pin":PIN},body:fd})).json();
+  document.getElementById("f_img").value=r.url;previewUrl(r.url);
 }
-async function saveItem() {
-  const name = document.getElementById("f_name").value.trim();
-  const price = parseFloat(document.getElementById("f_price").value);
-  if (!name) { alert("أدخل اسم الصنف"); return; }
-  if (!price && price!==0) { alert("أدخل السعر"); return; }
-  const body = JSON.stringify({
-    name, descr: document.getElementById("f_desc").value.trim(), price,
-    img: document.getElementById("f_img").value.trim(),
-    cat: document.getElementById("f_cat").value,
-    available: optAvail, popular: optPopular
-  });
-  if (editId) await fetch("/api/menu/"+editId,{method:"PUT",headers:H(),body});
+async function saveItem(){
+  const name=document.getElementById("f_name").value.trim();
+  const price=parseFloat(document.getElementById("f_price").value);
+  if(!name){alert("أدخل اسم الصنف");return}
+  if(!price&&price!==0){alert("أدخل السعر");return}
+  const body=JSON.stringify({name,descr:document.getElementById("f_desc").value.trim(),price,img:document.getElementById("f_img").value.trim(),cat:document.getElementById("f_cat").value,available:optAvail,popular:optPopular});
+  if(editId)await fetch("/api/menu/"+editId,{method:"PUT",headers:H(),body});
   else await fetch("/api/menu",{method:"POST",headers:H(),body});
-  closeEdit(); loadMenu();
+  closeEdit();loadMenu();
 }
-async function delItem(id) {
-  if (!confirm("هل تريد حذف هذا الصنف؟")) return;
-  await fetch("/api/menu/"+id,{method:"DELETE",headers:H()}); loadMenu();
-}
+async function delItem(id){if(!confirm("حذف الصنف؟"))return;await fetch("/api/menu/"+id,{method:"DELETE",headers:H()});loadMenu()}
 </script>
 </body>
 </html>
