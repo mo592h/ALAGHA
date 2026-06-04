@@ -37,7 +37,7 @@ if (!db) {
 // ترقية قاعدة بيانات قديمة
 db.cafeName = db.cafeName || "قهوة الأصالة";
 db.cats = db.cats || ["ساخن", "بارد", "حلويات", "أخرى"];
-db.menu.forEach(m => { if (m.available === undefined) m.available = true; if (m.popular === undefined) m.popular = false; });
+db.menu.forEach(m => { if (m.available === undefined) m.available = true; if (m.popular === undefined) m.popular = false; if (m.sizes === undefined) m.sizes = []; if (m.sugar === undefined) m.sugar = false; });
 saveDB(db);
 
 const uploadsDir = path.join(__dirname, "uploads");
@@ -66,9 +66,9 @@ app.put("/api/config", checkAdmin, (req, res) => {
 app.get("/api/menu", (req, res) => res.json(db.menu));
 
 app.post("/api/menu", checkAdmin, (req, res) => {
-  const { name, price, cat, img, descr, available, popular } = req.body;
+  const { name, price, cat, img, descr, available, popular, sizes, sugar } = req.body;
   const id = ++db.seq;
-  db.menu.push({ id, name, price, cat, img, descr, available: available !== false, popular: !!popular });
+  db.menu.push({ id, name, price, cat, img, descr, available: available !== false, popular: !!popular, sizes: sizes || [], sugar: !!sugar });
   saveDB(db);
   res.json({ id });
 });
