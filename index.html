@@ -275,6 +275,13 @@ body{
 .success-btn{background:var(--stone-warm);border:2px solid var(--yellow-dim);color:var(--yellow);padding:13px 30px;border-radius:8px;cursor:pointer;font-family:'Tajawal';font-weight:700;font-size:16px;margin-top:18px}
 
 .admin-link{position:fixed;bottom:6px;right:10px;color:var(--stone-lite);font-size:10px;text-decoration:none;z-index:5}
+.opt-title{font-family:'Aref Ruqaa',serif;color:var(--yellow);font-size:26px;text-align:center;margin-bottom:18px}
+.opt-label{color:var(--muted);font-size:14px;font-weight:700;margin:14px 0 8px}
+.opt-row{display:flex;gap:10px}
+.opt-btn{flex:1;background:var(--stone-warm);border:1px solid var(--line);color:var(--cream);padding:13px 8px;border-radius:8px;cursor:pointer;font-family:'Tajawal';font-weight:700;font-size:15px;transition:.2s;line-height:1.4}
+.opt-btn small{font-weight:400;color:var(--muted);font-size:12px}
+.opt-btn.on{border-color:var(--yellow);background:rgba(245,197,24,.12);color:var(--yellow)}
+.opt-btn.on small{color:var(--yellow-dim)}
 </style>
 </head>
 <body>
@@ -337,6 +344,12 @@ body{
   <button class="success-btn" onclick="document.getElementById('successScreen').classList.remove('show')">طلب جديد</button>
 </div>
 
+<div class="overlay" id="optOverlay" onclick="closeOpts()"></div>
+<div class="sheet" id="optSheet">
+  <div class="sheet-handle"></div>
+  <div id="optBody"></div>
+</div>
+
 <a class="admin-link" href="/admin.html">·</a>
 
 <script>
@@ -358,11 +371,41 @@ function renderCats(){
     `<button class="cat ${c===activeCat?'on':''}" onclick="setCat('${c}')">${c}</button>`).join("");
 }
 function setCat(c){activeCat=c;renderCats();document.getElementById("catTitle").textContent=c;render()}
+
+// السعر المعروض على البطاقة: أرخص حجم مفعّل أو السعر الأساسي
+function activeSizes(m){return (m.sizes||[]).filter(s=>s.on)}
+function hasOptions(m){return activeSizes(m).length>0 || m.sugar}
+function displayPrice(m){
+  const a=activeSizes(m);
+  if(a.length){return Math.min(...a.map(s=>s.price))}
+  return m.price||0;
+}
+// كم من هذا الصنف في السلة (كل التنويعات)
+function qtyInCart(id){return Object.values(cart).filter(l=>l.id===id).reduce((s,l)=>s+l.qty,0)}
+
 function render(){
   const items=menu.filter(m=>m.cat===activeCat);
   const g=document.getElementById("grid");
   if(!items.length){g.innerHTML='<div class="empty"><div class="empty-icon">☕</div>لا توجد أصناف</div>';return}
-  g.innerHTML=items.map((m,i)=>`
+  g.innerHTML=items.map((m,i)=>{
+    const q=qtyInCart(m.id);
+    const opt=hasOptions(m);
+    const a=activeSizes(m);
+    const priceLabel = a.length ? `يبدأ من ${displayPrice(m).toFixed(2)}` : `${displayPrice(m).toFixed(2)}`;
+    let actionBtn;
+    if(!m.available){actionBtn='';}
+    else if(opt){
+      // صنف بخيارات: زر يفتح المودال دائماً
+      actionBtn=`<button class="add-btn" onclick="openOpts(${m.id})">+</button>`;
+    } else {
+      actionBtn = q ? `
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="decSimple(${m.id})">−</button>
+          <span class="qty-num">${q}</span>
+          <button class="qty-btn" onclick="addSimple(${m.id})">+</button>
+        </div>` : `<button class="add-btn" onclick="addSimple(${m.id})">+</button>`;
+    }
+    return `
     <div class="card" style="animation-delay:${i*.06}s">
       <div class="card-img">
         ${m.popular?'<div class="badge-pop">⭐ الأكثر طلباً</div>':''}
@@ -373,41 +416,105 @@ function render(){
         <div class="card-name">${m.name}</div>
         <div class="card-desc">${m.descr||''}</div>
         <div class="card-foot">
-          <div class="price">${m.price.toFixed(2)} <small>د.أ</small></div>
-          ${!m.available?'':(cart[m.id]?`
-            <div class="qty-ctrl">
-              <button class="qty-btn" onclick="dec(${m.id})">−</button>
-              <span class="qty-num">${cart[m.id]}</span>
-              <button class="qty-btn" onclick="inc(${m.id})">+</button>
-            </div>`:`<button class="add-btn" onclick="inc(${m.id})">+</button>`)}
+          <div class="price">${priceLabel} <small>د.أ</small></div>
+          ${actionBtn}
         </div>
+        ${opt&&q?`<div style="margin-top:8px;font-size:13px;color:var(--yellow-dim);font-weight:700">في السلة: ${q} ✓</div>`:''}
       </div>
-    </div>`).join("");
+    </div>`;}).join("");
 }
-function inc(id){cart[id]=(cart[id]||0)+1;render();updateFab()}
-function dec(id){if(cart[id]>1)cart[id]--;else delete cart[id];render();updateFab()}
-function count(){return Object.values(cart).reduce((a,b)=>a+b,0)}
-function total(){return Object.entries(cart).reduce((s,[id,q])=>{const it=menu.find(m=>m.id==id);return s+(it?it.price*q:0)},0)}
+
+// === أصناف بسيطة (بدون خيارات) ===
+function addSimple(id){
+  const m=menu.find(x=>x.id===id);
+  const key="s"+id;
+  if(cart[key])cart[key].qty++;
+  else cart[key]={id,name:m.name,size:"",sugar:"",price:m.price||0,qty:1,img:m.img};
+  render();updateFab();
+}
+function decSimple(id){
+  const key="s"+id;
+  if(!cart[key])return;
+  if(cart[key].qty>1)cart[key].qty--;else delete cart[key];
+  render();updateFab();
+}
+
+// === مودال الخيارات (حجم + سكر) ===
+let optState={id:null,size:null,sugar:null};
+function openOpts(id){
+  const m=menu.find(x=>x.id===id);
+  const a=activeSizes(m);
+  optState={id,size:a.length?a[0].name:"",sugar:m.sugar?"وسط":""};
+  let html=`<div class="opt-title">${m.name}</div>`;
+  if(a.length){
+    html+=`<div class="opt-label">الحجم</div><div class="opt-row">`;
+    a.forEach(s=>{html+=`<button class="opt-btn ${s.name===optState.size?'on':''}" data-size="${s.name}" onclick="pickSize('${s.name}')">${s.name}<br><small>${s.price.toFixed(2)} د.أ</small></button>`});
+    html+=`</div>`;
+  }
+  if(m.sugar){
+    html+=`<div class="opt-label">السكر</div><div class="opt-row">`;
+    ["حلو","وسط","سادة"].forEach(s=>{html+=`<button class="opt-btn ${s===optState.sugar?'on':''}" data-sugar="${s}" onclick="pickSugar('${s}')">${s}</button>`});
+    html+=`</div>`;
+  }
+  html+=`<button class="confirm-btn" style="margin-top:18px" onclick="addOpts()">إضافة للسلة <span id="optPrice"></span></button>`;
+  document.getElementById("optBody").innerHTML=html;
+  updateOptPrice();
+  document.getElementById("optOverlay").classList.add("show");
+  document.getElementById("optSheet").classList.add("show");
+}
+function pickSize(s){optState.size=s;document.querySelectorAll("#optBody [data-size]").forEach(b=>b.classList.toggle("on",b.dataset.size===s));updateOptPrice()}
+function pickSugar(s){optState.sugar=s;document.querySelectorAll("#optBody [data-sugar]").forEach(b=>b.classList.toggle("on",b.dataset.sugar===s))}
+function optUnitPrice(){
+  const m=menu.find(x=>x.id===optState.id);
+  const a=activeSizes(m);
+  if(a.length){const f=a.find(s=>s.name===optState.size);return f?f.price:0}
+  return m.price||0;
+}
+function updateOptPrice(){const el=document.getElementById("optPrice");if(el)el.textContent="— "+optUnitPrice().toFixed(2)+" د.أ"}
+function closeOpts(){document.getElementById("optOverlay").classList.remove("show");document.getElementById("optSheet").classList.remove("show")}
+function addOpts(){
+  const m=menu.find(x=>x.id===optState.id);
+  const price=optUnitPrice();
+  const key=`o${m.id}_${optState.size}_${optState.sugar}`;
+  if(cart[key])cart[key].qty++;
+  else cart[key]={id:m.id,name:m.name,size:optState.size,sugar:optState.sugar,price,qty:1,img:m.img};
+  closeOpts();render();updateFab();
+}
+
+function count(){return Object.values(cart).reduce((s,l)=>s+l.qty,0)}
+function total(){return Object.values(cart).reduce((s,l)=>s+l.price*l.qty,0)}
 function updateFab(){
   const c=count();
   document.getElementById("cartFab").classList.toggle("show",c>0);
   document.getElementById("cartCount").textContent=c;
   document.getElementById("cartTotalFab").textContent=total().toFixed(2)+" د.أ";
 }
+function variantLabel(l){
+  const parts=[];
+  if(l.size)parts.push(l.size);
+  if(l.sugar)parts.push(l.sugar);
+  return parts.length?` (${parts.join(" · ")})`:"";
+}
+function lineQty(key,d){
+  if(!cart[key])return;
+  cart[key].qty+=d;
+  if(cart[key].qty<=0)delete cart[key];
+  render();updateFab();openCart();
+}
 function openCart(){
   const ci=document.getElementById("cartItems");
   const entries=Object.entries(cart);
   if(!entries.length){ci.innerHTML='<div style="text-align:center;color:var(--muted);padding:30px">سلتك فارغة</div>'}
-  else ci.innerHTML=entries.map(([id,q])=>{const it=menu.find(m=>m.id==id);return`
+  else ci.innerHTML=entries.map(([key,l])=>`
     <div class="cart-item">
-      <img src="${it.img||fallback}" onerror="this.src='${fallback}'">
-      <div class="ci-info"><div class="ci-name">${it.name}</div><div class="ci-price">${it.price.toFixed(2)} × ${q} = ${(it.price*q).toFixed(2)} د.أ</div></div>
+      <img src="${l.img||fallback}" onerror="this.src='${fallback}'">
+      <div class="ci-info"><div class="ci-name">${l.name}${variantLabel(l)}</div><div class="ci-price">${l.price.toFixed(2)} × ${l.qty} = ${(l.price*l.qty).toFixed(2)} د.أ</div></div>
       <div class="qty-ctrl">
-        <button class="qty-btn" onclick="dec(${id});openCart()">−</button>
-        <span class="qty-num">${q}</span>
-        <button class="qty-btn" onclick="inc(${id});openCart()">+</button>
+        <button class="qty-btn" onclick="lineQty('${key}',-1)">−</button>
+        <span class="qty-num">${l.qty}</span>
+        <button class="qty-btn" onclick="lineQty('${key}',1)">+</button>
       </div>
-    </div>`}).join("");
+    </div>`).join("");
   document.getElementById("sumCount").textContent=count();
   document.getElementById("sumTotal").textContent=total().toFixed(2)+" د.أ";
   document.getElementById("overlay").classList.add("show");
@@ -419,7 +526,7 @@ function closeCart(){
 }
 async function submitOrder(){
   if(!count())return;
-  const items=Object.entries(cart).map(([id,q])=>{const it=menu.find(m=>m.id==id);return{name:it.name,qty:q,price:it.price}});
+  const items=Object.values(cart).map(l=>({name:l.name+variantLabel(l),qty:l.qty,price:l.price}));
   const r=await(await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({tableNo:document.getElementById("tableNo").value,note:document.getElementById("orderNote").value,items,total:total()})})).json();
   cart={};document.getElementById("tableNo").value="";document.getElementById("orderNote").value="";
