@@ -116,6 +116,17 @@ body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--cre
 .cat-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 100px; padding: 8px 14px; margin: 0 6px 10px 0; font-size: 14px; }
 .cat-chip button { background: none; border: none; color: var(--red); cursor: pointer; font-size: 16px; }
 
+/* قائمتا الطلبات */
+.orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.orders-col { }
+.orders-col-head { font-family: 'Aref Ruqaa', serif; font-size: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid; }
+.orders-col-head.active { color: var(--gold-bright); border-color: var(--gold-deep); }
+.orders-col-head.done { color: #8c8; border-color: rgba(111,168,95,.4); }
+.clear-all-btn { background: rgba(199,92,74,.15); border: 1px solid rgba(199,92,74,.4); color: #e88; padding: 7px 14px; border-radius: 100px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 13px; transition: .2s; }
+.clear-all-btn:hover { background: rgba(199,92,74,.3); }
+.order-card.done-card { border-color: rgba(111,168,95,.25); opacity: .85; }
+@media (max-width: 700px) { .orders-grid { grid-template-columns: 1fr; } }
+
 @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -149,8 +160,21 @@ body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--cre
   <div class="container">
     <!-- صفحة الطلبات -->
     <div class="page on" id="page-orders">
-      <div class="col-head"><span>الطلبات الواردة (<span id="ordCount">0</span>)</span></div>
-      <div id="orders"></div>
+      <div class="orders-grid">
+        <div class="orders-col">
+          <div class="orders-col-head active">
+            <span>🔥 نشطة (<span id="ordCount">0</span>)</span>
+          </div>
+          <div id="orders-active"></div>
+        </div>
+        <div class="orders-col">
+          <div class="orders-col-head done">
+            <span>✅ جاهزة (<span id="ordDoneCount">0</span>)</span>
+            <button class="clear-all-btn" onclick="clearDone()">🗑️ مسح الكل</button>
+          </div>
+          <div id="orders-done"></div>
+        </div>
+      </div>
     </div>
 
     <!-- صفحة المنيو -->
@@ -324,39 +348,71 @@ async function loadMenu() {
 }
 
 // ===== الطلبات =====
+function renderOrderCard(o, isDone) {
+  const [cls,icon] = STATUS[o.status]||["st-new","🆕"];
+  const btns = isDone
+    ? `<div class="order-btns"><button class="obtn del" onclick="delOrder(${o.id})">🗑️ حذف</button></div>`
+    : `<div class="order-btns">
+        <button class="obtn" onclick="setStatus(${o.id},'قيد التحضير')">⏳ تحضير</button>
+        <button class="obtn" onclick="setStatus(${o.id},'جاهز')">✅ جاهز</button>
+        <button class="obtn del" onclick="delOrder(${o.id})">🗑️</button>
+       </div>`;
+  return `
+  <div class="order-card ${o.status==='جديد'?'flash':''} ${isDone?'done-card':''}">
+    <div class="order-head">
+      <div><span class="order-table">🪑 طاولة ${o.tableNo}</span> <span class="order-time">🕐 ${o.time}</span></div>
+      <span class="status-tag ${cls}">${icon} ${o.status}</span>
+    </div>
+    <div class="order-items">
+      ${o.items.map(it=>`<div class="order-item-line">${it.qty}× ${it.name} <span style="color:var(--muted)">— ${(it.price*it.qty).toFixed(2)} د.أ</span></div>`).join("")}
+    </div>
+    ${o.note?`<div class="order-note">📝 ${o.note}</div>`:''}
+    <div class="order-total"><span>المجموع</span><span>${o.total.toFixed(2)} د.أ</span></div>
+    ${btns}
+  </div>`;
+}
+
 async function loadOrders() {
   const orders = await (await fetch("/api/orders",{headers:H()})).json();
-  document.getElementById("ordCount").textContent = orders.length;
-  const newIds = new Set(orders.filter(o=>o.status==="جديد").map(o=>o.id));
+  const active = orders.filter(o => o.status !== "جاهز");
+  const done   = orders.filter(o => o.status === "جاهز");
+
+  // جرس للطلبات الجديدة
+  const newIds = new Set(active.filter(o=>o.status==="جديد").map(o=>o.id));
   let hasNew = false;
   newIds.forEach(id=>{ if(!lastNewIds.has(id)) hasNew = true; });
   if (hasNew && !firstLoad) playBell();
   lastNewIds = newIds; firstLoad = false;
 
-  const el = document.getElementById("orders");
-  if (!orders.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>لا توجد طلبات بعد</div>'; return; }
-  el.innerHTML = orders.map(o=>{
-    const [cls,icon] = STATUS[o.status]||["st-new","🆕"];
-    return `
-    <div class="order-card ${o.status==='جديد'?'flash':''}">
-      <div class="order-head">
-        <div><span class="order-table">🪑 طاولة ${o.tableNo}</span> <span class="order-time">🕐 ${o.time}</span></div>
-        <span class="status-tag ${cls}">${icon} ${o.status}</span>
-      </div>
-      <div class="order-items">
-        ${o.items.map(it=>`<div class="order-item-line">${it.qty}× ${it.name} <span style="color:var(--muted)">— ${(it.price*it.qty).toFixed(2)} د.أ</span></div>`).join("")}
-      </div>
-      ${o.note?`<div class="order-note">📝 ${o.note}</div>`:''}
-      <div class="order-total"><span>المجموع</span><span>${o.total.toFixed(2)} د.أ</span></div>
-      <div class="order-btns">
-        <button class="obtn" onclick="setStatus(${o.id},'قيد التحضير')">⏳ تحضير</button>
-        <button class="obtn" onclick="setStatus(${o.id},'جاهز')">✅ جاهز</button>
-        <button class="obtn del" onclick="delOrder(${o.id})">🗑️</button>
-      </div>
-    </div>`;}).join("");
+  document.getElementById("ordCount").textContent = active.length;
+  document.getElementById("ordDoneCount").textContent = done.length;
+
+  const aEl = document.getElementById("orders-active");
+  aEl.innerHTML = active.length
+    ? active.map(o => renderOrderCard(o, false)).join("")
+    : '<div class="empty"><div class="empty-icon">🎉</div>لا توجد طلبات نشطة</div>';
+
+  const dEl = document.getElementById("orders-done");
+  dEl.innerHTML = done.length
+    ? done.map(o => renderOrderCard(o, true)).join("")
+    : '<div class="empty"><div class="empty-icon">📋</div>لا توجد طلبات جاهزة بعد</div>';
 }
-async function setStatus(id, status) { await fetch("/api/orders/"+id,{method:"PUT",headers:H(),body:JSON.stringify({status})}); loadOrders(); }
-async function delOrder(id) { await fetch("/api/orders/"+id,{method:"DELETE",headers:H()}); loadOrders(); }
+
+async function setStatus(id, status) {
+  await fetch("/api/orders/"+id,{method:"PUT",headers:H(),body:JSON.stringify({status})});
+  loadOrders();
+}
+async function delOrder(id) {
+  await fetch("/api/orders/"+id,{method:"DELETE",headers:H()});
+  loadOrders();
+}
+async function clearDone() {
+  if (!confirm("مسح جميع الطلبات الجاهزة؟")) return;
+  const orders = await (await fetch("/api/orders",{headers:H()})).json();
+  const done = orders.filter(o => o.status === "جاهز");
+  await Promise.all(done.map(o => fetch("/api/orders/"+o.id,{method:"DELETE",headers:H()})));
+  loadOrders();
+}
 
 // ===== الإحصائيات =====
 async function loadStats() {
