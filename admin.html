@@ -121,6 +121,11 @@ body{
 .bigbtn{background:var(--yellow);color:#111;border:none;width:100%;padding:15px;border-radius:8px;cursor:pointer;font-family:'Tajawal';font-weight:900;font-size:16px;transition:.2s;letter-spacing:.5px}
 .bigbtn:active{transform:scale(.98)}
 .ordiv{text-align:center;color:var(--muted);font-size:13px;margin:6px 0 12px}
+.sizes-box{display:flex;flex-direction:column;gap:8px}
+.size-row{display:flex;align-items:center;gap:10px}
+.size-check{display:flex;align-items:center;gap:7px;flex:1;background:var(--stone-warm);border:1px solid var(--line);border-radius:7px;padding:11px;cursor:pointer;font-weight:700;font-size:14px}
+.size-check input{width:18px;height:18px;accent-color:var(--yellow);cursor:pointer}
+.size-price{flex:1;max-width:120px}
 .empty{text-align:center;color:var(--muted);padding:45px 20px}
 .empty-icon{font-size:38px;opacity:.35;margin-bottom:10px}
 .hide{display:none}
@@ -211,8 +216,27 @@ body{
     <input class="inp" id="f_name" placeholder="مثال: قهوة عربية">
     <label class="fl">الوصف</label>
     <input class="inp" id="f_desc" placeholder="وصف قصير">
-    <label class="fl">السعر (د.أ) *</label>
+    <label class="fl">السعر الأساسي (د.أ) *</label>
     <input class="inp" id="f_price" type="number" step="0.25" min="0" placeholder="0.00">
+    <div style="font-size:12px;color:var(--muted);margin:-8px 0 14px">يُستخدم إذا لم تفعّل الأحجام</div>
+
+    <label class="fl">الأحجام والأسعار</label>
+    <div class="sizes-box" id="sizesBox">
+      <div class="size-row" data-size="صغير">
+        <label class="size-check"><input type="checkbox" class="size-on"> صغير</label>
+        <input type="number" class="inp size-price" step="0.25" min="0" placeholder="السعر" style="margin:0">
+      </div>
+      <div class="size-row" data-size="وسط">
+        <label class="size-check"><input type="checkbox" class="size-on"> وسط</label>
+        <input type="number" class="inp size-price" step="0.25" min="0" placeholder="السعر" style="margin:0">
+      </div>
+      <div class="size-row" data-size="كبير">
+        <label class="size-check"><input type="checkbox" class="size-on"> كبير</label>
+        <input type="number" class="inp size-price" step="0.25" min="0" placeholder="السعر" style="margin:0">
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin:6px 0 14px">فعّل الأحجام المتوفرة وحدد سعر كل واحد. السعر يتغير تلقائياً للزبون.</div>
+
     <label class="fl">القسم</label>
     <select class="inp" id="f_cat"></select>
     <label class="fl">الصورة</label>
@@ -223,6 +247,9 @@ body{
       <div class="togopt on" id="tgl-avail" onclick="toggleOpt('avail')">✓ متوفر</div>
       <div class="togopt" id="tgl-popular" onclick="toggleOpt('popular')">⭐ الأكثر طلباً</div>
     </div>
+    <div class="togrow" style="margin-top:-4px">
+      <div class="togopt" id="tgl-sugar" onclick="toggleOpt('sugar')">🍬 خيار السكر (حلو/وسط/سادة)</div>
+    </div>
     <button class="bigbtn" onclick="saveItem()">💾 حفظ</button>
   </div>
 </div>
@@ -230,7 +257,7 @@ body{
 <script>
 let PIN="",menu=[],CATS=[],editId=null;
 let lastNewIds=new Set(),bellOn=true,firstLoad=true;
-let optAvail=true,optPopular=false;
+let optAvail=true,optPopular=false,optSugar=false;
 const fallback="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&q=80";
 const H=()=>({"Content-Type":"application/json","x-pin":PIN});
 const STATUS={"جديد":["st-new","🆕"],"قيد التحضير":["st-prep","⏳"],"جاهز":["st-done","✅"]};
@@ -282,6 +309,14 @@ async function saveCafeName(){const n=document.getElementById("cafeName").value.
 async function addCat(){const c=document.getElementById("newCat").value.trim();if(!c||CATS.includes(c))return;CATS.push(c);await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});document.getElementById("newCat").value="";renderCatsList();renderCatSelect()}
 async function removeCat(c){if(!confirm("حذف القسم "+c+"؟"))return;CATS=CATS.filter(x=>x!==c);await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});renderCatsList();renderCatSelect()}
 
+function sizeSummary(m){
+  const act=(m.sizes||[]).filter(s=>s.on);
+  let s = act.length
+    ? act.map(x=>`${x.name} ${x.price.toFixed(2)}`).join(" / ")
+    : `${(m.price||0).toFixed(2)} د.أ`;
+  if(m.sugar) s += " · 🍬";
+  return s;
+}
 async function loadMenu(){
   menu=await(await fetch("/api/menu")).json();
   document.getElementById("menuList").innerHTML=menu.length?menu.map(m=>`
@@ -292,7 +327,7 @@ async function loadMenu(){
           ${m.popular?'<span class="mtag mt-pop">⭐</span>':''}
           ${!m.available?'<span class="mtag mt-out">غير متوفر</span>':''}
         </div>
-        <div class="mmeta">${m.cat} · ${m.price.toFixed(2)} د.أ</div>
+        <div class="mmeta">${m.cat} · ${sizeSummary(m)}</div>
       </div>
       <button class="ibtn" onclick="openEdit(${m.id})">✏️</button>
       <button class="ibtn" onclick="delItem(${m.id})">🗑️</button>
@@ -362,20 +397,44 @@ async function loadStats(){
 }
 
 function previewUrl(url){const img=document.getElementById("ipreview");if(url){img.src=url;img.style.display="block"}else img.style.display="none"}
-function toggleOpt(w){if(w==="avail"){optAvail=!optAvail;document.getElementById("tgl-avail").classList.toggle("on",optAvail)}else{optPopular=!optPopular;document.getElementById("tgl-popular").classList.toggle("on",optPopular)}}
+function toggleOpt(w){
+  if(w==="avail"){optAvail=!optAvail;document.getElementById("tgl-avail").classList.toggle("on",optAvail)}
+  else if(w==="popular"){optPopular=!optPopular;document.getElementById("tgl-popular").classList.toggle("on",optPopular)}
+  else if(w==="sugar"){optSugar=!optSugar;document.getElementById("tgl-sugar").classList.toggle("on",optSugar)}
+}
+function setSizeRows(sizes){
+  const rows=document.querySelectorAll("#sizesBox .size-row");
+  rows.forEach(row=>{
+    const nm=row.dataset.size;
+    const found=(sizes||[]).find(s=>s.name===nm);
+    row.querySelector(".size-on").checked=!!(found&&found.on);
+    row.querySelector(".size-price").value=found?found.price:"";
+  });
+}
+function readSizes(){
+  const out=[];
+  document.querySelectorAll("#sizesBox .size-row").forEach(row=>{
+    const on=row.querySelector(".size-on").checked;
+    const price=parseFloat(row.querySelector(".size-price").value);
+    out.push({name:row.dataset.size,on,price:isNaN(price)?0:price});
+  });
+  return out;
+}
 function openEdit(id){
   editId=id||null;renderCatSelect();
   document.getElementById("modalTitle").firstChild.textContent=id?"تعديل صنف ":"صنف جديد ";
-  const m=id?menu.find(x=>x.id===id):{name:"",descr:"",price:"",img:"",cat:CATS[0],available:true,popular:false};
+  const m=id?menu.find(x=>x.id===id):{name:"",descr:"",price:"",img:"",cat:CATS[0],available:true,popular:false,sizes:[],sugar:false};
   document.getElementById("f_name").value=m.name;
   document.getElementById("f_desc").value=m.descr||"";
   document.getElementById("f_price").value=m.price||"";
   document.getElementById("f_img").value=m.img||"";
   document.getElementById("f_cat").value=m.cat;
   document.getElementById("f_file").value="";
-  optAvail=m.available!==false;optPopular=!!m.popular;
+  optAvail=m.available!==false;optPopular=!!m.popular;optSugar=!!m.sugar;
   document.getElementById("tgl-avail").classList.toggle("on",optAvail);
   document.getElementById("tgl-popular").classList.toggle("on",optPopular);
+  document.getElementById("tgl-sugar").classList.toggle("on",optSugar);
+  setSizeRows(m.sizes);
   previewUrl(m.img||"");
   document.getElementById("overlay").classList.add("show");
 }
@@ -388,10 +447,21 @@ async function uploadImg(input){
 }
 async function saveItem(){
   const name=document.getElementById("f_name").value.trim();
-  const price=parseFloat(document.getElementById("f_price").value);
+  const price=parseFloat(document.getElementById("f_price").value)||0;
   if(!name){alert("أدخل اسم الصنف");return}
-  if(!price&&price!==0){alert("أدخل السعر");return}
-  const body=JSON.stringify({name,descr:document.getElementById("f_desc").value.trim(),price,img:document.getElementById("f_img").value.trim(),cat:document.getElementById("f_cat").value,available:optAvail,popular:optPopular});
+  const sizes=readSizes();
+  const activeSizes=sizes.filter(s=>s.on);
+  // لو ما في أحجام مفعّلة، لازم سعر أساسي
+  if(activeSizes.length===0 && !price){alert("أدخل السعر الأساسي أو فعّل حجماً واحداً على الأقل بسعره");return}
+  // تحقق أن كل حجم مفعّل له سعر
+  if(activeSizes.some(s=>!s.price)){alert("حدد سعراً لكل حجم مفعّل");return}
+  const body=JSON.stringify({
+    name,descr:document.getElementById("f_desc").value.trim(),price,
+    img:document.getElementById("f_img").value.trim(),
+    cat:document.getElementById("f_cat").value,
+    available:optAvail,popular:optPopular,
+    sizes,sugar:optSugar
+  });
   if(editId)await fetch("/api/menu/"+editId,{method:"PUT",headers:H(),body});
   else await fetch("/api/menu",{method:"POST",headers:H(),body});
   closeEdit();loadMenu();
