@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>مقهى الاغا</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Reem+Kufi+Fun:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Reem+Kufi+Fun:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Lateef:wght@700&display=swap" rel="stylesheet">
 <style>
 :root {
   --stone-dark: #1a1814;
@@ -66,20 +66,63 @@ body{
   box-shadow:0 0 0 6px rgba(197,165,20,.15), 0 8px 30px rgba(0,0,0,.6);
 }
 .logo-wrap img{width:100%;height:100%;object-fit:cover}
+.title-block{position:relative;display:flex;flex-direction:column;align-items:center}
+/* زخرفة علوية */
+.title-flourish{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:2px;opacity:.85}
+.title-flourish .swirl{color:var(--yellow-dim);font-size:26px;font-family:'Aref Ruqaa',serif;line-height:1}
+.title-flourish .dot{width:6px;height:6px;background:var(--yellow);border-radius:50%;box-shadow:0 0 10px var(--yellow)}
+.title-flourish .ln{width:50px;height:1px;background:linear-gradient(90deg,transparent,var(--yellow-dim))}
+.title-flourish .ln.r{background:linear-gradient(90deg,var(--yellow-dim),transparent)}
+
+/* الاسم الأسطوري */
 .cafe-name{
-  font-family:'Reem Kufi Fun',sans-serif;
-  font-size:clamp(42px,10vw,80px);
+  position:relative;
+  font-family:'Aref Ruqaa','Lateef',serif;
+  font-size:clamp(64px,17vw,150px);
   font-weight:700;
-  color:var(--yellow);
-  line-height:1;
-  letter-spacing:2px;
-  text-shadow:0 2px 20px rgba(197,165,20,.4), 0 0 60px rgba(197,165,20,.15);
+  line-height:.95;
+  letter-spacing:1px;
+  /* تدرّج ذهبي معدني */
+  background:linear-gradient(180deg,
+    #fff4cf 0%,
+    #f5c518 28%,
+    #c9a014 50%,
+    #9a7a0e 62%,
+    #f5c518 80%,
+    #fde87c 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  filter:drop-shadow(0 3px 2px rgba(0,0,0,.55)) drop-shadow(0 0 28px rgba(245,197,24,.4));
+  padding:0 8px;
 }
+/* بريق يمر عبر الحروف */
+.cafe-name::after{
+  content:attr(data-name);
+  position:absolute;inset:0;padding:0 8px;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.85) 48%,transparent 58%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  background-size:250% 100%;
+  animation:shine 4.5s ease-in-out infinite;
+}
+@keyframes shine{0%,100%{background-position:180% 0}45%,55%{background-position:-80% 0}}
+/* وهج خلفي */
+.title-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:120%;height:130%;
+  background:radial-gradient(ellipse,rgba(245,197,24,.18),transparent 65%);
+  filter:blur(20px);z-index:-1;pointer-events:none;
+}
+/* الشعار الفرعي */
 .cafe-tagline{
-  font-size:15px;color:var(--muted);
-  letter-spacing:3px;margin-top:6px;
-  text-transform:uppercase;font-weight:500;
+  font-family:'Aref Ruqaa',serif;
+  font-size:clamp(15px,4vw,20px);color:var(--yellow-dim);
+  letter-spacing:6px;margin-top:10px;font-weight:400;
 }
+.title-underline{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px}
+.title-underline .gem{color:var(--yellow);font-size:14px;animation:gemPulse 3s ease-in-out infinite}
+@keyframes gemPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+.title-underline .bar{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--yellow-dim),transparent)}
 .hero-bar{
   display:flex;align-items:center;gap:10px;
   margin-top:14px;opacity:.5;
@@ -241,9 +284,19 @@ body{
     <div class="logo-wrap">
       <img src="/uploads/logo.jpg" onerror="this.style.display='none'">
     </div>
-    <div class="cafe-name" id="cafeName">الاغا</div>
-    <div class="cafe-tagline">مقهى الجبل الأصيل</div>
-    <div class="hero-bar"><span>◆</span></div>
+    <div class="title-block">
+      <div class="title-flourish">
+        <span class="ln"></span><span class="dot"></span>
+        <span class="swirl">۞</span>
+        <span class="dot"></span><span class="ln r"></span>
+      </div>
+      <div class="title-glow"></div>
+      <div class="cafe-name" id="cafeName" data-name="الاغا">الاغا</div>
+      <div class="cafe-tagline">مقهى الجبل الأصيل</div>
+      <div class="title-underline">
+        <span class="bar"></span><span class="gem">◆</span><span class="bar"></span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -293,7 +346,9 @@ const fallback="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=6
 async function load(){
   const cfg=await(await fetch("/api/config")).json();
   CATS=cfg.cats; activeCat=CATS[0]||"";
-  document.getElementById("cafeName").textContent=cfg.cafeName;
+  const nameEl=document.getElementById("cafeName");
+  nameEl.textContent=cfg.cafeName;
+  nameEl.setAttribute("data-name",cfg.cafeName);
   document.title=cfg.cafeName;
   menu=await(await fetch("/api/menu")).json();
   renderCats(); render();
