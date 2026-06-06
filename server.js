@@ -5,6 +5,7 @@ const fs = require("fs");
 
 const app = express();
 const ADMIN_PIN = process.env.ADMIN_PIN || "1234";
+const CAPTAIN_PIN = process.env.CAPTAIN_PIN || "5678";
 
 // ===== إعداد Supabase =====
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
@@ -108,6 +109,11 @@ function checkAdmin(req, res, next) {
   if (req.headers["x-pin"] === ADMIN_PIN) return next();
   res.status(401).json({ error: "unauthorized" });
 }
+function checkCaptain(req, res, next) {
+  const pin = req.headers["x-pin"];
+  if (pin === CAPTAIN_PIN || pin === ADMIN_PIN) return next();
+  res.status(401).json({ error: "unauthorized" });
+}
 // مغلّف للتعامل مع أخطاء async
 const wrap = fn => (req, res) => fn(req, res).catch(e => { console.error(e); res.status(500).json({ error: "server" }); });
 
@@ -148,49 +154,84 @@ app.post("/api/upload", checkAdmin, upload.single("img"), (req, res) => {
 });
 
 // ===== الطلبات =====
-app.get("/api/orders", checkAdmin, (req, res) => res.json([...db.orders].reverse()));
+// الإدارة ترى فقط الطلبات المؤكَّدة (ليست بانتظار الكابتن)
+app.get("/api/orders", checkAdmin, (req, res) =>
+  res.json([...db.orders].filter(o => o.status !== "بانتظار").reverse()));
 
+// الكابتن يرى فقط الطلبات بانتظار التأكيد
+app.get("/api/pending", checkCaptain, (req, res) =>
+  res.json([...db.orders].filter(o => o.status === "بانتظار").reverse()));
+
+// الزبون يرسل طلباً → يبدأ بحالة "بانتظار" (عند الكابتن)
 app.post("/api/orders", wrap(async (req, res) => {
   const { tableNo, items, total, note } = req.body;
   const now = new Date();
   const time = now.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
   const id = ++db.seq;
-  db.orders.push({ id, tableNo: tableNo || "—", items, total, note: note || "", status: "جديد", time, ts: now.getTime() });
+  db.orders.push({ id, tableNo: tableNo || "—", items, total, note: note || "", status: "بانتظار", time, ts: now.getTime() });
   await saveDB(db);
   res.json({ id });
 }));
 
+// الكابتن يؤكد الطلب → ينتقل للإدارة بحالة "جديد"
+app.post("/api/orders/:id/confirm", checkCaptain, wrap(async (req, res) => {
+  const o = db.orders.find(x => x.id == req.params.id);
+  if (o && o.status === "بانتظار") { o.status = "جديد"; await saveDB(db); }
+  res.json({ ok: true });
+}));
+
+// الكابتن يعدّل أصناف/ملاحظات/مجموع الطلب (وهو بانتظار)
+app.put("/api/orders/:id/edit", checkCaptain, wrap(async (req, res) => {
+  const o = db.orders.find(x => x.id == req.params.id);
+  if (o) {
+    if (Array.isArray(req.body.items)) o.items = req.body.items;
+    if (req.body.note !== undefined) o.note = req.body.note;
+    if (req.body.total !== undefined) o.total = req.body.total;
+    if (req.body.tableNo !== undefined) o.tableNo = req.body.tableNo;
+    await saveDB(db);
+  }
+  res.json({ ok: true });
+}));
+
+// حذف طلب (الكابتن يحذف المعلّق، الأدمن يحذف أي شيء)
+app.delete("/api/orders/:id", checkCaptain, wrap(async (req, res) => {
+  db.orders = db.orders.filter(o => o.id != req.params.id);
+  await saveDB(db);
+  res.json({ ok: true });
+}));
+
+// الإدارة تغيّر حالة الطلب (تحضير/جاهز)
 app.put("/api/orders/:id", checkAdmin, wrap(async (req, res) => {
   const o = db.orders.find(x => x.id == req.params.id);
   if (o) { o.status = req.body.status; await saveDB(db); }
   res.json({ ok: true });
 }));
 
-app.delete("/api/orders/:id", checkAdmin, wrap(async (req, res) => {
-  db.orders = db.orders.filter(o => o.id != req.params.id);
-  await saveDB(db);
-  res.json({ ok: true });
-}));
-
-// ===== الإحصائيات =====
+// ===== الإحصائيات ===== (لا تحسب الطلبات المعلّقة عند الكابتن)
 app.get("/api/stats", checkAdmin, (req, res) => {
+  const confirmed = db.orders.filter(o => o.status !== "بانتظار");
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const todayOrders = db.orders.filter(o => o.ts >= today.getTime());
-  const revenue = db.orders.reduce((s, o) => s + o.total, 0);
+  const todayOrders = confirmed.filter(o => o.ts >= today.getTime());
+  const revenue = confirmed.reduce((s, o) => s + o.total, 0);
   const todayRevenue = todayOrders.reduce((s, o) => s + o.total, 0);
   const counts = {};
-  db.orders.forEach(o => o.items.forEach(it => { counts[it.name] = (counts[it.name] || 0) + it.qty; }));
+  confirmed.forEach(o => o.items.forEach(it => { counts[it.name] = (counts[it.name] || 0) + it.qty; }));
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
   res.json({
-    totalOrders: db.orders.length,
+    totalOrders: confirmed.length,
     todayOrders: todayOrders.length,
     revenue, todayRevenue,
-    pending: db.orders.filter(o => o.status === "جديد").length,
+    pending: confirmed.filter(o => o.status === "جديد").length,
     topItems: top
   });
 });
 
-app.post("/api/login", (req, res) => res.json({ ok: req.body.pin === ADMIN_PIN }));
+app.post("/api/login", (req, res) => {
+  const pin = req.body.pin;
+  if (pin === ADMIN_PIN) return res.json({ ok: true, role: "admin" });
+  if (pin === CAPTAIN_PIN) return res.json({ ok: true, role: "captain" });
+  res.json({ ok: false });
+});
 
 const PORT = process.env.PORT || 3000;
 initDB().then(() => {
