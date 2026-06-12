@@ -4,8 +4,9 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
-const ADMIN_PIN = process.env.ADMIN_PIN || "1234";
-const CAPTAIN_PIN = process.env.CAPTAIN_PIN || "5678";
+// الرموز الأولية (تُستخدم فقط أول مرة، ثم تُحفظ في قاعدة البيانات وتصبح قابلة للتغيير)
+const INIT_ADMIN_PIN = process.env.ADMIN_PIN || "1234";
+const INIT_CAPTAIN_PIN = process.env.CAPTAIN_PIN || "5678";
 
 // ===== إعداد Supabase =====
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
@@ -31,7 +32,9 @@ function defaultDB() {
       { id: 5, name: "كنافة نابلسية", price: 2.00, cat: "حلويات", img: "https://images.unsplash.com/photo-1571167530149-c1105da4c2c7?w=600&q=80", descr: "كنافة بالجبنة طازجة", available: true, popular: true, sizes: [], sugar: false },
       { id: 6, name: "نرجيلة", price: 3.00, cat: "أخرى", img: "https://images.unsplash.com/photo-1543160577-13a994d70a26?w=600&q=80", descr: "نكهات متعددة", available: true, popular: false, sizes: [], sugar: false }
     ],
-    orders: []
+    orders: [],
+    adminPin: INIT_ADMIN_PIN,
+    captainPin: INIT_CAPTAIN_PIN
   };
 }
 
@@ -86,6 +89,9 @@ async function initDB() {
   db.cafeName = db.cafeName || "الاغا";
   db.cats = db.cats || ["ساخن", "بارد", "حلويات", "أخرى"];
   db.seq = db.seq || db.menu.reduce((m, x) => Math.max(m, x.id), 0);
+  // الرموز: تُحفظ في القاعدة. القيمة الأولية من متغيرات البيئة، وبعدها تُغيَّر من اللوحة.
+  if (db.adminPin === undefined) db.adminPin = INIT_ADMIN_PIN;
+  if (db.captainPin === undefined) db.captainPin = INIT_CAPTAIN_PIN;
   db.menu.forEach(m => {
     if (m.available === undefined) m.available = true;
     if (m.popular === undefined) m.popular = false;
@@ -106,12 +112,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 function checkAdmin(req, res, next) {
-  if (req.headers["x-pin"] === ADMIN_PIN) return next();
+  if (req.headers["x-pin"] === db.adminPin) return next();
   res.status(401).json({ error: "unauthorized" });
 }
 function checkCaptain(req, res, next) {
   const pin = req.headers["x-pin"];
-  if (pin === CAPTAIN_PIN || pin === ADMIN_PIN) return next();
+  if (pin === db.captainPin || pin === db.adminPin) return next();
   res.status(401).json({ error: "unauthorized" });
 }
 // مغلّف للتعامل مع أخطاء async
@@ -235,10 +241,32 @@ app.get("/api/stats", checkAdmin, (req, res) => {
 
 app.post("/api/login", (req, res) => {
   const pin = req.body.pin;
-  if (pin === ADMIN_PIN) return res.json({ ok: true, role: "admin" });
-  if (pin === CAPTAIN_PIN) return res.json({ ok: true, role: "captain" });
+  if (pin === db.adminPin) return res.json({ ok: true, role: "admin" });
+  if (pin === db.captainPin) return res.json({ ok: true, role: "captain" });
   res.json({ ok: false });
 });
+
+// تغيير رمز الإدارة (يتطلب الرمز الحالي)
+app.post("/api/change-admin-pin", checkAdmin, wrap(async (req, res) => {
+  const { current, next } = req.body;
+  if (current !== db.adminPin) return res.json({ ok: false, error: "الرمز الحالي خاطئ" });
+  if (!next || String(next).length < 4) return res.json({ ok: false, error: "الرمز الجديد يجب أن يكون 4 خانات على الأقل" });
+  db.adminPin = String(next);
+  await saveDB(db);
+  res.json({ ok: true });
+}));
+
+// تغيير رمز الكابتن (يتطلب الرمز الحالي للكابتن — أو الأدمن يقدر يغيّره)
+app.post("/api/change-captain-pin", checkCaptain, wrap(async (req, res) => {
+  const { current, next } = req.body;
+  const pin = req.headers["x-pin"];
+  // لو المُرسِل كابتن، لازم يطابق الرمز الحالي. الأدمن معفى.
+  if (pin !== db.adminPin && current !== db.captainPin) return res.json({ ok: false, error: "الرمز الحالي خاطئ" });
+  if (!next || String(next).length < 4) return res.json({ ok: false, error: "الرمز الجديد يجب أن يكون 4 خانات على الأقل" });
+  db.captainPin = String(next);
+  await saveDB(db);
+  res.json({ ok: true });
+}));
 
 const PORT = process.env.PORT || 3000;
 initDB().then(() => {
