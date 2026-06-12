@@ -201,6 +201,12 @@ body{
           <input class="inp" id="newCat" placeholder="قسم جديد" style="margin-bottom:0" onkeydown="if(event.key==='Enter')addCat()">
           <button class="addbtn" onclick="addCat()">إضافة</button>
         </div>
+
+        <div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>
+        <label class="fl">🔒 تغيير رمز الإدارة</label>
+        <input class="inp" id="ad_cur" type="password" placeholder="الرمز الحالي">
+        <input class="inp" id="ad_new" type="password" placeholder="الرمز الجديد (4 خانات على الأقل)">
+        <button class="bigbtn" onclick="changeAdminPin()">تغيير رمز الإدارة</button>
       </div>
     </div>
 
@@ -307,6 +313,17 @@ function renderCatSelect(){document.getElementById("f_cat").innerHTML=CATS.map(c
 function renderCatsList(){document.getElementById("catsList").innerHTML=CATS.map(c=>`<span class="cat-chip">${c}<button onclick="removeCat('${c}')">✕</button></span>`).join("")}
 async function saveCafeName(){const n=document.getElementById("cafeName").value.trim();if(!n)return;await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cafeName:n})});alert("تم الحفظ ✓")}
 async function addCat(){const c=document.getElementById("newCat").value.trim();if(!c||CATS.includes(c))return;CATS.push(c);await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});document.getElementById("newCat").value="";renderCatsList();renderCatSelect()}
+async function changeAdminPin(){
+  const current=document.getElementById("ad_cur").value;
+  const next=document.getElementById("ad_new").value;
+  if(!current||!next){alert("املأ الحقلين");return}
+  const r=await(await fetch("/api/change-admin-pin",{method:"POST",headers:H(),body:JSON.stringify({current,next})})).json();
+  if(r.ok){
+    alert("تم تغيير رمز الإدارة ✓ — استخدم الرمز الجديد في الدخول القادم");
+    PIN=next;
+    document.getElementById("ad_cur").value="";document.getElementById("ad_new").value="";
+  }else alert(r.error||"فشل التغيير");
+}
 async function removeCat(c){if(!confirm("حذف القسم "+c+"؟"))return;CATS=CATS.filter(x=>x!==c);await fetch("/api/config",{method:"PUT",headers:H(),body:JSON.stringify({cats:CATS})});renderCatsList();renderCatSelect()}
 
 function sizeSummary(m){
