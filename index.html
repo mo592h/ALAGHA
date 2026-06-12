@@ -275,6 +275,19 @@ body{
 .success-btn{background:var(--stone-warm);border:2px solid var(--yellow-dim);color:var(--yellow);padding:13px 30px;border-radius:8px;cursor:pointer;font-family:'Tajawal';font-weight:700;font-size:16px;margin-top:18px}
 
 .admin-link{position:fixed;bottom:6px;right:10px;color:var(--stone-lite);font-size:10px;text-decoration:none;z-index:5}
+/* تتبّع الطلب */
+.track-steps{display:flex;flex-direction:column;gap:0;margin:28px auto;max-width:300px;text-align:right}
+.tstep{display:flex;align-items:center;gap:14px;position:relative;padding:6px 0}
+.tstep-dot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;flex-shrink:0;background:var(--stone-warm);border:2px solid var(--line);transition:.4s;z-index:1}
+.tstep.done .tstep-dot{background:var(--green);border-color:var(--green)}
+.tstep.active .tstep-dot{background:var(--yellow);border-color:var(--yellow);box-shadow:0 0 18px rgba(245,197,24,.5);animation:tpulse 1.5s ease-in-out infinite}
+@keyframes tpulse{0%,100%{box-shadow:0 0 18px rgba(245,197,24,.4)}50%{box-shadow:0 0 28px rgba(245,197,24,.7)}}
+.tstep-line{position:absolute;right:21px;top:50px;width:2px;height:30px;background:var(--line);transition:.4s}
+.tstep.done .tstep-line{background:var(--green)}
+.tstep-label{font-size:16px;font-weight:700;color:var(--muted);transition:.3s}
+.tstep.done .tstep-label,.tstep.active .tstep-label{color:var(--cream)}
+.tstep.active .tstep-label{color:var(--yellow)}
+.track-hint{color:var(--muted);font-size:14px;margin-top:8px}
 .opt-title{font-family:'Aref Ruqaa',serif;color:var(--yellow);font-size:26px;text-align:center;margin-bottom:18px}
 .opt-label{color:var(--muted);font-size:14px;font-weight:700;margin:14px 0 8px}
 .opt-row{display:flex;gap:10px}
@@ -337,11 +350,31 @@ body{
 </div>
 
 <div class="success-screen" id="successScreen">
-  <div class="success-icon">✅</div>
-  <h2>تم استلام طلبك!</h2>
-  <p>طلبك بانتظار تأكيد كابتن الصالة</p>
+  <h2 style="margin-bottom:4px">تتبّع طلبك</h2>
   <div class="success-num" id="successNum"></div>
-  <button class="success-btn" onclick="document.getElementById('successScreen').classList.remove('show')">طلب جديد</button>
+  <div class="track-steps" id="trackSteps">
+    <div class="tstep" data-step="بانتظار">
+      <div class="tstep-line"></div>
+      <div class="tstep-dot">📝</div>
+      <div class="tstep-label">بانتظار تأكيد الكابتن</div>
+    </div>
+    <div class="tstep" data-step="جديد">
+      <div class="tstep-line"></div>
+      <div class="tstep-dot">👨‍🍳</div>
+      <div class="tstep-label">تم التأكيد — وصل للمطبخ</div>
+    </div>
+    <div class="tstep" data-step="قيد التحضير">
+      <div class="tstep-line"></div>
+      <div class="tstep-dot">☕</div>
+      <div class="tstep-label">قيد التحضير</div>
+    </div>
+    <div class="tstep" data-step="جاهز">
+      <div class="tstep-dot">🎉</div>
+      <div class="tstep-label">طلبك جاهز!</div>
+    </div>
+  </div>
+  <p class="track-hint" id="trackHint">يتم التحديث تلقائياً...</p>
+  <button class="success-btn" onclick="closeTracking()">طلب جديد</button>
 </div>
 
 <div class="overlay" id="optOverlay" onclick="closeOpts()"></div>
@@ -524,6 +557,9 @@ function closeCart(){
   document.getElementById("overlay").classList.remove("show");
   document.getElementById("sheet").classList.remove("show");
 }
+let trackId=null,trackTimer=null;
+const STEP_ORDER=["بانتظار","جديد","قيد التحضير","جاهز"];
+
 async function submitOrder(){
   if(!count())return;
   const items=Object.values(cart).map(l=>({name:l.name+variantLabel(l),qty:l.qty,price:l.price}));
@@ -533,6 +569,44 @@ async function submitOrder(){
   closeCart();render();updateFab();
   document.getElementById("successNum").textContent="رقم الطلب #"+r.id;
   document.getElementById("successScreen").classList.add("show");
+  startTracking(r.id);
+}
+
+function renderTrack(status){
+  const idx=STEP_ORDER.indexOf(status);
+  document.querySelectorAll("#trackSteps .tstep").forEach(el=>{
+    const sIdx=STEP_ORDER.indexOf(el.dataset.step);
+    el.classList.remove("done","active");
+    if(sIdx<idx)el.classList.add("done");
+    else if(sIdx===idx)el.classList.add("active");
+  });
+  const hint=document.getElementById("trackHint");
+  if(status==="جاهز")hint.textContent="🎉 تفضّل، طلبك جاهز للاستلام!";
+  else if(status==="بانتظار")hint.textContent="بانتظار مراجعة كابتن الصالة...";
+  else hint.textContent="يتم التحديث تلقائياً...";
+}
+
+async function pollTrack(){
+  if(!trackId)return;
+  try{
+    const r=await(await fetch("/api/track/"+trackId)).json();
+    if(r.found){
+      renderTrack(r.status);
+      if(r.status==="جاهز"){clearInterval(trackTimer);trackTimer=null;}
+    }
+  }catch(e){}
+}
+function startTracking(id){
+  trackId=id;
+  renderTrack("بانتظار");
+  if(trackTimer)clearInterval(trackTimer);
+  trackTimer=setInterval(pollTrack,4000);
+  pollTrack();
+}
+function closeTracking(){
+  if(trackTimer){clearInterval(trackTimer);trackTimer=null;}
+  trackId=null;
+  document.getElementById("successScreen").classList.remove("show");
 }
 load();
 </script>
