@@ -154,6 +154,13 @@ app.post("/api/upload", checkAdmin, upload.single("img"), (req, res) => {
 });
 
 // ===== الطلبات =====
+// تتبّع حالة طلب واحد (عام - للزبون، يرجّع الحالة فقط بدون تفاصيل حساسة)
+app.get("/api/track/:id", (req, res) => {
+  const o = db.orders.find(x => x.id == req.params.id);
+  if (!o) return res.json({ found: false });
+  res.json({ found: true, status: o.status, tableNo: o.tableNo, time: o.time });
+});
+
 // الإدارة ترى فقط الطلبات المؤكَّدة (ليست بانتظار الكابتن)
 app.get("/api/orders", checkAdmin, (req, res) =>
   res.json([...db.orders].filter(o => o.status !== "بانتظار").reverse()));
